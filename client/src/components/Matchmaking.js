@@ -15,7 +15,11 @@ import {
   XCircle,
   AlertCircle,
   Play,
-  RefreshCw
+  RefreshCw,
+  Crown,
+  Medal,
+  Edit,
+  Save
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -25,11 +29,22 @@ const Matchmaking = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
+  const [eventInfo, setEventInfo] = useState(null);
   const [filters, setFilters] = useState({
     experienceLevel: '',
     weightClass: '',
     location: ''
   });
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [resultForm, setResultForm] = useState({
+    winnerId: '',
+    loserId: '',
+    method: 'Decision',
+    rounds: 3,
+    notes: ''
+  });
+  const [savingResult, setSavingResult] = useState(false);
 
   useEffect(() => {
     fetchBoxers();
@@ -68,8 +83,14 @@ const Matchmaking = () => {
       });
       
       if (response.data.success) {
-        setMatches(response.data.data);
-        alert(`Generated ${response.data.data.length} new matches!`);
+        setMatches(response.data.data.matches || []);
+        setEventInfo({
+          eventDate: response.data.data.eventDate,
+          eventUrl: response.data.data.eventUrl,
+          eventQRCodeUrl: response.data.data.eventQRCodeUrl,
+          totalGenerated: response.data.data.totalGenerated
+        });
+        alert(`Generated ${response.data.data.totalGenerated} new matches for the event!`);
       }
     } catch (err) {
       setError('Failed to generate matches');
@@ -111,6 +132,87 @@ const Matchmaking = () => {
       case 'Completed': return 'status-completed';
       case 'Cancelled': return 'status-cancelled';
       default: return 'status-scheduled';
+    }
+  };
+
+  const isWinner = (boxerId, result) => {
+    return result && result.winner && result.winner._id === boxerId;
+  };
+
+  const isLoser = (boxerId, result) => {
+    return result && result.loser && result.loser._id === boxerId;
+  };
+
+  const getWinnerDisplay = (match) => {
+    if (!match.result) return null;
+    
+    if (match.result.winner) {
+      return {
+        name: match.result.winner.name,
+        method: match.result.method,
+        rounds: match.result.rounds
+      };
+    }
+    return null;
+  };
+
+  const openResultModal = (match) => {
+    setSelectedMatch(match);
+    setResultForm({
+      winnerId: '',
+      loserId: '',
+      method: 'Decision',
+      rounds: match.rounds,
+      notes: ''
+    });
+    setShowResultModal(true);
+  };
+
+  const closeResultModal = () => {
+    setShowResultModal(false);
+    setSelectedMatch(null);
+    setResultForm({
+      winnerId: '',
+      loserId: '',
+      method: 'Decision',
+      rounds: 3,
+      notes: ''
+    });
+  };
+
+  const handleRecordResult = async (e) => {
+    e.preventDefault();
+    
+    if (!resultForm.winnerId || !resultForm.loserId) {
+      setError('Please select both winner and loser');
+      return;
+    }
+
+    if (resultForm.winnerId === resultForm.loserId) {
+      setError('Winner and loser cannot be the same boxer');
+      return;
+    }
+
+    try {
+      setSavingResult(true);
+      setError(null);
+      
+      const response = await axios.post(`/api/matches/${selectedMatch._id}/result`, resultForm);
+      
+      if (response.data.success) {
+        // Update the match in the local state
+        const updatedMatches = matches.map(m => 
+          m._id === selectedMatch._id ? response.data.data : m
+        );
+        setMatches(updatedMatches);
+        
+        alert('Match result recorded successfully!');
+        closeResultModal();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to record result');
+    } finally {
+      setSavingResult(false);
     }
   };
 
@@ -242,6 +344,9 @@ const Matchmaking = () => {
               <p className="text-2xl font-bold text-gray-900">
                 {matches.filter(m => m.status === 'Completed').length}
               </p>
+              <p className="text-xs text-gray-500">
+                {matches.filter(m => m.status === 'Completed' && m.result).length} with results
+              </p>
             </div>
           </div>
         </div>
@@ -257,6 +362,50 @@ const Matchmaking = () => {
           </div>
         </div>
       </div>
+
+      {/* Event QR Code */}
+      {eventInfo && eventInfo.eventQRCodeUrl && (
+        <div className="card mb-6 border-green-200 bg-green-50">
+          <div className="text-center">
+                          <h3 className="text-lg font-semibold text-green-800 mb-4">Public Fights QR Code Generated!</h3>
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
+              <div className="flex-shrink-0">
+                <img 
+                  src={eventInfo.eventQRCodeUrl} 
+                  alt="Event QR Code" 
+                  className="w-48 h-48 border-4 border-white shadow-lg rounded-lg"
+                />
+              </div>
+              <div className="text-left">
+                <div className="mb-4">
+                  <h4 className="font-semibold text-green-800 mb-2">Event Details</h4>
+                  <p className="text-sm text-green-700 mb-1">
+                    <strong>Date:</strong> {eventInfo.eventDate}
+                  </p>
+                  <p className="text-sm text-green-700 mb-1">
+                    <strong>Matches:</strong> {eventInfo.totalGenerated} generated
+                  </p>
+                  <p className="text-sm text-green-700">
+                    <strong>Event URL:</strong> 
+                    <a 
+                      href={eventInfo.eventUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline ml-1"
+                    >
+                      View Event Page
+                    </a>
+                  </p>
+                </div>
+                <div className="text-xs text-green-600">
+                  <p>📱 Scan this QR code to view upcoming and completed fights</p>
+                  <p>🔗 Share this QR code for public access to fight information</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (
@@ -312,16 +461,47 @@ const Matchmaking = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Boxer 1 */}
-                  <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-200 flex items-center justify-center">
+                  <div className={`text-center p-3 rounded-lg border-2 transition-all ${
+                    match.result ? 
+                      (isWinner(match.boxer1._id, match.result) ? 'border-green-500 bg-green-50' : 
+                       isLoser(match.boxer1._id, match.result) ? 'border-red-500 bg-red-50' : 
+                       'border-gray-200') : 
+                      'border-gray-200 hover:border-red-300'
+                  }`}>
+                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-200 flex items-center justify-center relative">
                       <User className="w-8 h-8 text-gray-600" />
+                      {match.result && isWinner(match.boxer1._id, match.result) && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
+                          <Crown className="w-3 h-3 text-white" />
+                        </div>
+                      )}
                     </div>
-                    <h4 className="font-medium text-gray-900">{match.boxer1.name}</h4>
+                    <h4 className={`font-medium ${
+                      match.result ? 
+                        (isWinner(match.boxer1._id, match.result) ? 'text-green-800 font-bold' : 
+                         isLoser(match.boxer1._id, match.result) ? 'text-red-800' : 
+                         'text-gray-900') : 
+                        'text-gray-900'
+                    }`}>
+                      {match.boxer1.name}
+                    </h4>
                     <p className="text-sm text-gray-600">{match.boxer1.experienceLevel}</p>
                     <div className="flex items-center justify-center mt-1">
                       <Scale className="w-3 h-3 mr-1" />
                       <span className="text-xs text-gray-600">{match.boxer1.weightKg} kg</span>
                     </div>
+                    {match.result && isWinner(match.boxer1._id, match.result) && (
+                      <div className="flex items-center justify-center mt-2 text-green-700">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        <span className="text-sm font-semibold">WINNER</span>
+                      </div>
+                    )}
+                    {match.result && isLoser(match.boxer1._id, match.result) && (
+                      <div className="flex items-center justify-center mt-2 text-red-700">
+                        <XCircle className="w-4 h-4 mr-1" />
+                        <span className="text-sm font-semibold">LOSER</span>
+                      </div>
+                    )}
                   </div>
                   
                   {/* VS */}
@@ -338,20 +518,66 @@ const Matchmaking = () => {
                           {match.rounds} rounds
                         </div>
                       </div>
+                      {/* Winner Information */}
+                      {match.result && getWinnerDisplay(match) && (
+                        <div className="mt-3 p-2 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
+                          <div className="flex items-center justify-center mb-1">
+                            <Crown className="w-4 h-4 text-yellow-600 mr-1" />
+                            <span className="text-xs font-semibold text-yellow-800">WINNER</span>
+                          </div>
+                          <div className="text-xs text-yellow-700 font-medium">
+                            {getWinnerDisplay(match).name}
+                          </div>
+                          <div className="text-xs text-yellow-600">
+                            {getWinnerDisplay(match).method} - Round {getWinnerDisplay(match).rounds}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
                   {/* Boxer 2 */}
-                  <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-200 flex items-center justify-center">
+                  <div className={`text-center p-3 rounded-lg border-2 transition-all ${
+                    match.result ? 
+                      (isWinner(match.boxer2._id, match.result) ? 'border-green-500 bg-green-50' : 
+                       isLoser(match.boxer2._id, match.result) ? 'border-red-500 bg-red-50' : 
+                       'border-gray-200') : 
+                      'border-gray-200 hover:border-red-300'
+                  }`}>
+                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-200 flex items-center justify-center relative">
                       <User className="w-8 h-8 text-gray-600" />
+                      {match.result && isWinner(match.boxer2._id, match.result) && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
+                          <Crown className="w-3 h-3 text-white" />
+                        </div>
+                      )}
                     </div>
-                    <h4 className="font-medium text-gray-900">{match.boxer2.name}</h4>
+                    <h4 className={`font-medium ${
+                      match.result ? 
+                        (isWinner(match.boxer2._id, match.result) ? 'text-green-800 font-bold' : 
+                         isLoser(match.boxer2._id, match.result) ? 'text-red-800' : 
+                         'text-gray-900') : 
+                        'text-gray-900'
+                    }`}>
+                      {match.boxer2.name}
+                    </h4>
                     <p className="text-sm text-gray-600">{match.boxer2.experienceLevel}</p>
                     <div className="flex items-center justify-center mt-1">
                       <Scale className="w-3 h-3 mr-1" />
                       <span className="text-xs text-gray-600">{match.boxer2.weightKg} kg</span>
                     </div>
+                    {match.result && isWinner(match.boxer2._id, match.result) && (
+                      <div className="flex items-center justify-center mt-2 text-green-700">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        <span className="text-sm font-semibold">WINNER</span>
+                      </div>
+                    )}
+                    {match.result && isLoser(match.boxer2._id, match.result) && (
+                      <div className="flex items-center justify-center mt-2 text-red-700">
+                        <XCircle className="w-4 h-4 mr-1" />
+                        <span className="text-sm font-semibold">LOSER</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -364,12 +590,248 @@ const Matchmaking = () => {
                     <span className="text-gray-600">{match.weightClass}</span>
                     <span className="text-gray-600">{match.roundDuration} min rounds</span>
                   </div>
+                  
+                  {/* Result Details for Completed Matches */}
+                  {match.result && (
+                    <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Medal className="w-4 h-4 text-blue-600 mr-2" />
+                          <span className="text-sm font-semibold text-blue-800">Fight Result</span>
+                        </div>
+                        <span className="text-xs text-blue-600">
+                          {new Date(match.result.recordedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-xs">
+                        <div>
+                          <span className="font-medium text-blue-700">Method:</span>
+                          <span className="ml-1 text-blue-800">{match.result.method}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-blue-700">Rounds:</span>
+                          <span className="ml-1 text-blue-800">{match.result.rounds}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-blue-700">Winner:</span>
+                          <span className="ml-1 text-blue-800 font-semibold">{match.result.winner.name}</span>
+                        </div>
+                      </div>
+                      {match.result.notes && (
+                        <div className="mt-2 text-xs">
+                          <span className="font-medium text-blue-700">Notes:</span>
+                          <span className="ml-1 text-blue-800">{match.result.notes}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Record Result Button for Matches without Results */}
+                  {!match.result && match.status === 'Scheduled' && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">No result recorded yet</span>
+                        </div>
+                        <button
+                          onClick={() => openResultModal(match)}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Record Result
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Result Recording Modal */}
+      {showResultModal && selectedMatch && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-red-600 to-red-800 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">Record Match Result</h2>
+                  <p className="text-red-100">Match ID: {selectedMatch.matchId}</p>
+                </div>
+                <button
+                  onClick={closeResultModal}
+                  className="text-red-100 hover:text-white text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {/* Match Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Boxer 1</h3>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {selectedMatch.boxer1.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">{selectedMatch.boxer1.name}</h4>
+                      <p className="text-sm text-gray-600">{selectedMatch.boxer1.experienceLevel}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Boxer 2</h3>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {selectedMatch.boxer2.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">{selectedMatch.boxer2.name}</h4>
+                      <p className="text-sm text-gray-600">{selectedMatch.boxer2.experienceLevel}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Result Form */}
+              <form onSubmit={handleRecordResult} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Winner Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <CheckCircle className="w-4 h-4 inline mr-1 text-green-600" />
+                      Winner
+                    </label>
+                    <select
+                      value={resultForm.winnerId}
+                      onChange={(e) => setResultForm({ ...resultForm, winnerId: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select winner...</option>
+                      <option value={selectedMatch.boxer1._id}>{selectedMatch.boxer1.name}</option>
+                      <option value={selectedMatch.boxer2._id}>{selectedMatch.boxer2.name}</option>
+                    </select>
+                  </div>
+
+                  {/* Loser Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <XCircle className="w-4 h-4 inline mr-1 text-red-600" />
+                      Loser
+                    </label>
+                    <select
+                      value={resultForm.loserId}
+                      onChange={(e) => setResultForm({ ...resultForm, loserId: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select loser...</option>
+                      <option value={selectedMatch.boxer1._id}>{selectedMatch.boxer1.name}</option>
+                      <option value={selectedMatch.boxer2._id}>{selectedMatch.boxer2.name}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Result Method */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Award className="w-4 h-4 inline mr-1" />
+                      Result Method
+                    </label>
+                    <select
+                      value={resultForm.method}
+                      onChange={(e) => setResultForm({ ...resultForm, method: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="Decision">Decision</option>
+                      <option value="TKO">TKO</option>
+                      <option value="KO">KO</option>
+                      <option value="Retirement">Retirement</option>
+                      <option value="Disqualification">Disqualification</option>
+                      <option value="Walkover">Walkover</option>
+                    </select>
+                  </div>
+
+                  {/* Rounds */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Users className="w-4 h-4 inline mr-1" />
+                      Rounds Completed
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max={selectedMatch.rounds}
+                      value={resultForm.rounds}
+                      onChange={(e) => setResultForm({ ...resultForm, rounds: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Notes (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={resultForm.notes}
+                      onChange={(e) => setResultForm({ ...resultForm, notes: e.target.value })}
+                      placeholder="e.g., Close match, split decision"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-center text-red-800">
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      <span className="text-sm">{error}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit Buttons */}
+                <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={closeResultModal}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingResult}
+                    className="btn-primary flex items-center space-x-2 disabled:opacity-50"
+                  >
+                    {savingResult ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    <span>{savingResult ? 'Saving...' : 'Record Result'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

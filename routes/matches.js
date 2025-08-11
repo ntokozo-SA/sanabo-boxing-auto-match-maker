@@ -7,7 +7,7 @@ const {
   findMatchesForBoxer,
   generateAllMatches,
   validateMatchResult,
-  generateQRCode
+  generateEventQRCode
 } = require('../utils/matchmaking');
 
 /**
@@ -148,6 +148,56 @@ router.get('/match/:matchId', async (req, res) => {
 });
 
 /**
+ * @route   GET /api/matches/event/:eventDate
+ * @desc    Get all matches for a specific event date
+ * @access  Public
+ */
+router.get('/event/:eventDate', async (req, res) => {
+  try {
+    const eventDate = req.params.eventDate;
+    
+    // Parse the event date (format: YYYY-MM-DD)
+    const date = new Date(eventDate);
+    if (isNaN(date.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid event date format. Use YYYY-MM-DD'
+      });
+    }
+
+    // Get all matches and filter by date
+    const allMatches = demoDataAPI.getAllMatches();
+    const eventMatches = allMatches.filter(match => {
+      const matchDate = new Date(match.scheduledDate);
+      const eventDateObj = new Date(eventDate);
+      
+      // Compare dates (ignore time)
+      return matchDate.toDateString() === eventDateObj.toDateString();
+    });
+
+    // Get event info from the first match (venue, etc.)
+    const eventInfo = eventMatches.length > 0 ? {
+      venue: eventMatches[0].venue,
+      totalMatches: eventMatches.length,
+      date: eventDate
+    } : null;
+
+    res.json({
+      success: true,
+      data: eventMatches,
+      eventInfo: eventInfo
+    });
+  } catch (error) {
+    console.error('Error fetching event matches:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching event matches',
+      error: error.message
+    });
+  }
+});
+
+/**
  * @route   POST /api/matches/matchmaking
  * @desc    Run matchmaking algorithm and generate matches
  * @access  Public
@@ -254,19 +304,37 @@ router.post('/matchmaking', async (req, res) => {
       }
     }
 
-    // Add generated matches to demo data
-    const existingMatches = demoDataAPI.getAllMatches();
-    const newMatches = [...existingMatches, ...generatedMatches];
+    // Generate event QR code for the event date
+    let eventQRCodeUrl = '';
+    let eventUrl = '';
     
-    // Update demo matches (in a real app, this would save to database)
-    // For demo purposes, we'll just return the new matches
+    if (generatedMatches.length > 0) {
+      const eventDate = generatedMatches[0].scheduledDate;
+      const dateString = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      eventUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/public-fights`;
+      
+      try {
+        eventQRCodeUrl = await generateEventQRCode(dateString);
+      } catch (error) {
+        console.error('Error generating event QR code:', error);
+        eventQRCodeUrl = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==`;
+      }
+    }
+
+    // Add generated matches to demo data
+    generatedMatches.forEach(match => {
+      demoDataAPI.createMatch(match);
+    });
 
     res.status(201).json({
       success: true,
-      message: `Generated ${generatedMatches.length} matches`,
+      message: `Generated ${generatedMatches.length} matches for event`,
       data: {
         totalGenerated: generatedMatches.length,
         totalSaved: generatedMatches.length,
+        eventDate: generatedMatches.length > 0 ? generatedMatches[0].scheduledDate.toISOString().split('T')[0] : null,
+        eventUrl: eventUrl,
+        eventQRCodeUrl: eventQRCodeUrl,
         matches: generatedMatches.map(match => ({
           matchId: match.matchId,
           boxer1: match.boxer1,
@@ -274,8 +342,7 @@ router.post('/matchmaking', async (req, res) => {
           scheduledDate: match.scheduledDate,
           venue: match.venue,
           weightClass: match.weightClass,
-          experienceLevel: match.experienceLevel,
-          qrCodeUrl: match.qrCodeUrl
+          experienceLevel: match.experienceLevel
         }))
       }
     });
@@ -398,6 +465,32 @@ router.post('/:id/result', async (req, res) => {
     };
     match.status = 'Completed';
     match.updatedAt = new Date();
+
+    // Update boxer records
+    try {
+      // Update winner's record
+      winner.record.wins++;
+      winner.boutsCount++;
+      const winMethod = method.toLowerCase();
+      if (winner.winMethods && winner.winMethods[winMethod] !== undefined) {
+        winner.winMethods[winMethod]++;
+      }
+
+      // Update loser's record
+      loser.record.losses++;
+      loser.boutsCount++;
+      const lossMethod = method.toLowerCase();
+      if (loser.lossMethods && loser.lossMethods[lossMethod] !== undefined) {
+        loser.lossMethods[lossMethod]++;
+      }
+
+      // Save updated boxers
+      demoDataAPI.updateBoxer(winner);
+      demoDataAPI.updateBoxer(loser);
+    } catch (error) {
+      console.error('Error updating boxer records:', error);
+      // Continue with match result even if boxer update fails
+    }
 
     res.json({
       success: true,

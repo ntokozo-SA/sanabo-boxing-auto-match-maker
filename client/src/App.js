@@ -2,6 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import MatchDetails from './components/MatchDetails';
+import EventDetails from './components/EventDetails';
+import RecordResult from './components/RecordResult';
+import PublicFightsDisplay from './components/PublicFightsDisplay';
+import BoxerRecord from './components/BoxerRecord';
+import Admin from './components/Admin';
 import Home from './components/Home';
 import Boxers from './components/Boxers';
 import Matches from './components/Matches';
@@ -10,7 +15,7 @@ import Header from './components/Header';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="App min-h-screen bg-gray-50">
         <Header />
         <main className="container mx-auto px-4 py-8">
@@ -20,6 +25,12 @@ function App() {
             <Route path="/matches" element={<Matches />} />
             <Route path="/matches/matchmaking" element={<Matchmaking />} />
             <Route path="/match/:matchId" element={<MatchDetails />} />
+            <Route path="/event/:eventDate" element={<EventDetails />} />
+            <Route path="/record-result/:matchId" element={<RecordResult />} />
+            <Route path="/fights" element={<PublicFightsDisplay />} />
+            <Route path="/public-fights" element={<PublicFightsDisplay />} />
+            <Route path="/boxer/:boxerId/record" element={<BoxerRecord />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={
               <div className="text-center py-20">
                 <h1 className="text-4xl font-bold text-gray-800 mb-4">404 - Page Not Found</h1>

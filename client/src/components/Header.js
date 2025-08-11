@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Home, Users, Calendar, Target } from 'lucide-react';
+import { Trophy, Home, Users, Calendar, Target, Swords, Shield } from 'lucide-react';
 
 const Header = () => {
   return (
@@ -41,13 +41,27 @@ const Header = () => {
               <Calendar className="w-4 h-4" />
               <span>Matches</span>
             </Link>
-            <Link 
-              to="/matches/matchmaking" 
-              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
-            >
-              <Target className="w-4 h-4" />
-              <span>Matchmaking</span>
-            </Link>
+                    <Link
+          to="/matches/matchmaking"
+          className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+        >
+          <Target className="w-4 h-4" />
+          <span>Matchmaking</span>
+        </Link>
+        <Link
+          to="/fights"
+          className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+        >
+          <Swords className="w-4 h-4" />
+          <span>Fights</span>
+        </Link>
+        <Link
+          to="/admin"
+          className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+        >
+          <Shield className="w-4 h-4" />
+          <span>Admin</span>
+        </Link>
           </nav>
 
           {/* Mobile Menu Button */}

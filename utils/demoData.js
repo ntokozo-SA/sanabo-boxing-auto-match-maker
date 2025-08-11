@@ -288,14 +288,13 @@ let demoMatches = [
     _id: '1',
     boxer1: demoBoxers[0],
     boxer2: demoBoxers[1],
-    scheduledDate: new Date('2024-02-15T18:00:00Z'),
+    scheduledDate: new Date('2024-03-15T18:00:00Z'),
     venue: 'Central Boxing Arena',
     weightClass: 'Welterweight',
     experienceLevel: 'Elite',
     rounds: 4,
     roundDuration: 3,
-    qrCodeUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-    matchId: 'MATCH-20240215-001',
+    matchId: 'MATCH-20240315-001',
     status: 'Scheduled',
     result: null,
     officials: {
@@ -314,22 +313,21 @@ let demoMatches = [
     _id: '2',
     boxer1: demoBoxers[2],
     boxer2: demoBoxers[3],
-    scheduledDate: new Date('2024-02-10T16:00:00Z'),
-    venue: 'Youth Boxing Center',
+    scheduledDate: new Date('2024-03-15T19:00:00Z'),
+    venue: 'Central Boxing Arena',
     weightClass: 'Featherweight',
-    experienceLevel: 'Junior',
-    rounds: 3,
-    roundDuration: 2,
-    qrCodeUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-    matchId: 'MATCH-20240210-001',
+    experienceLevel: 'Elite',
+    rounds: 4,
+    roundDuration: 3,
+    matchId: 'MATCH-20240315-002',
     status: 'Completed',
     result: {
       winner: demoBoxers[3],
       loser: demoBoxers[2],
       method: 'Decision',
-      rounds: 3,
+      rounds: 4,
       notes: 'Close match, split decision',
-      recordedAt: new Date('2024-02-10T17:30:00Z')
+      recordedAt: new Date('2024-03-15T20:30:00Z')
     },
     officials: {
       referee: { name: 'Frank Miller', license: 'REF-002' },
@@ -341,7 +339,32 @@ let demoMatches = [
       timekeeper: { name: 'Jack Anderson', license: 'TIM-002' }
     },
     createdAt: new Date('2024-02-05'),
-    updatedAt: new Date('2024-02-10T17:30:00Z')
+    updatedAt: new Date('2024-03-15T20:30:00Z')
+  },
+  {
+    _id: '3',
+    boxer1: demoBoxers[4],
+    boxer2: demoBoxers[5],
+    scheduledDate: new Date('2024-03-15T20:00:00Z'),
+    venue: 'Central Boxing Arena',
+    weightClass: 'Lightweight',
+    experienceLevel: 'Elite',
+    rounds: 4,
+    roundDuration: 3,
+    matchId: 'MATCH-20240315-003',
+    status: 'Scheduled',
+    result: null,
+    officials: {
+      referee: { name: 'Sarah Wilson', license: 'REF-003' },
+      judges: [
+        { name: 'Tom Davis', license: 'JUD-007' },
+        { name: 'Emma Brown', license: 'JUD-008' },
+        { name: 'Chris Garcia', license: 'JUD-009' }
+      ],
+      timekeeper: { name: 'Mike Johnson', license: 'TIM-003' }
+    },
+    createdAt: new Date('2024-02-10'),
+    updatedAt: new Date('2024-02-10')
   }
 ];
 

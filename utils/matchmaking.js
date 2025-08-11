@@ -276,12 +276,12 @@ function getRoundDurationForLevel(experienceLevel) {
 }
 
 /**
- * Generate QR code for match
+ * Generate QR code for event date
  */
-async function generateQRCode(matchId) {
+async function generateEventQRCode(eventDate) {
   try {
-    const matchUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/match/${matchId}`;
-    const qrCodeDataUrl = await QRCode.toDataURL(matchUrl, {
+    const eventUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/public-fights`;
+    const qrCodeDataUrl = await QRCode.toDataURL(eventUrl, {
       width: 300,
       margin: 2,
       color: {
@@ -322,6 +322,6 @@ module.exports = {
   getWeightClass,
   getRoundsForLevel,
   getRoundDurationForLevel,
-  generateQRCode,
+  generateEventQRCode,
   validateMatchResult
 }; 

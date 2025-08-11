@@ -9,7 +9,9 @@ import {
   Target, 
   Trophy,
   Edit,
-  Trash2
+  Trash2,
+  BarChart3,
+  Crown
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -184,6 +186,23 @@ const Boxers = () => {
                   <MapPin className="w-4 h-4 mr-2" />
                   <span>{boxer.location}</span>
                 </div>
+                
+                {/* Record Display */}
+                {boxer.record && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Record:</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        {boxer.record.wins || 0}-{boxer.record.losses || 0}-{boxer.record.draws || 0}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-600">
+                      <span>Win Rate: {boxer.record.wins && boxer.record.losses ? 
+                        Math.round(((boxer.record.wins || 0) / ((boxer.record.wins || 0) + (boxer.record.losses || 0))) * 100) : 0}%</span>
+                      <span>Total: {(boxer.record.wins || 0) + (boxer.record.losses || 0) + (boxer.record.draws || 0)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 pt-4 border-t border-gray-200">
@@ -195,9 +214,18 @@ const Boxers = () => {
                   }`}>
                     {boxer.isActive ? 'Active' : 'Inactive'}
                   </span>
-                  <button className="text-sm text-red-600 hover:text-red-800 font-medium">
-                    View Details
-                  </button>
+                  <div className="flex space-x-2">
+                    <a
+                      href={`/boxer/${boxer._id}/record`}
+                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <BarChart3 className="w-4 h-4 mr-1" />
+                      Record
+                    </a>
+                    <button className="text-sm text-red-600 hover:text-red-800 font-medium">
+                      View Details
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
