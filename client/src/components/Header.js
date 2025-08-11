@@ -15,8 +15,12 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-lg overflow-hidden shadow-md">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Sanabo Boxing</h1>
@@ -30,7 +34,7 @@ const Header = () => {
               <>
                 <Link 
                   to="/fights" 
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
                 >
                   <Swords className="w-4 h-4" />
                   <span>Today's Fights</span>
@@ -44,42 +48,42 @@ const Header = () => {
               <>
                 <Link 
                   to="/" 
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
                 >
                   <Home className="w-4 h-4" />
                   <span>Home</span>
                 </Link>
                 <Link 
                   to="/boxers" 
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
                 >
                   <Users className="w-4 h-4" />
                   <span>Boxers</span>
                 </Link>
                 <Link 
                   to="/matches" 
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Matches</span>
                 </Link>
                 <Link
                   to="/matches/matchmaking"
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
                 >
                   <Target className="w-4 h-4" />
                   <span>Matchmaking</span>
                 </Link>
                 <Link
                   to="/fights"
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
                 >
                   <Swords className="w-4 h-4" />
                   <span>Fights</span>
                 </Link>
                 <Link
                   to="/admin"
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
                 >
                   <Shield className="w-4 h-4" />
                   <span>Admin</span>
@@ -90,7 +94,7 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button className="text-gray-700 hover:text-red-600 transition-colors duration-200">
+            <button className="text-gray-700 hover:text-green-600 transition-colors duration-200">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>

@@ -63,7 +63,14 @@ const Boxers = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mx-auto mb-4">
+            <img 
+              src="/images.jpg" 
+              alt="Sanabo Boxing Logo" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading boxers...</p>
         </div>
       </div>
@@ -75,9 +82,18 @@ const Boxers = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Boxers</h1>
-            <p className="text-gray-600 mt-2">Manage boxer profiles and information</p>
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-lg overflow-hidden shadow-md">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Boxers</h1>
+              <p className="text-gray-600 mt-2">Manage boxer profiles and information</p>
+            </div>
           </div>
           <button className="btn-primary flex items-center space-x-2">
             <Plus className="w-4 h-4" />
@@ -95,7 +111,7 @@ const Boxers = () => {
               <input
                 type="text"
                 placeholder="Search boxers by name or location..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               />
@@ -103,7 +119,7 @@ const Boxers = () => {
           </div>
           <div className="flex gap-4">
             <select
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               value={filters.experienceLevel}
               onChange={(e) => setFilters({ ...filters, experienceLevel: e.target.value })}
             >
@@ -115,7 +131,7 @@ const Boxers = () => {
               <option value="Elite">Elite</option>
             </select>
             <select
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               value={filters.isActive}
               onChange={(e) => setFilters({ ...filters, isActive: e.target.value })}
             >

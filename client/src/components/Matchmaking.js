@@ -220,7 +220,14 @@ const Matchmaking = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mx-auto mb-4">
+            <img 
+              src="/images.jpg" 
+              alt="Sanabo Boxing Logo" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading matchmaking data...</p>
         </div>
       </div>
@@ -232,9 +239,18 @@ const Matchmaking = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Matchmaking</h1>
-            <p className="text-gray-600 mt-2">Generate optimal matches between boxers using IBA rules</p>
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-lg overflow-hidden shadow-md">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Matchmaking</h1>
+              <p className="text-gray-600 mt-2">Generate optimal matches between boxers using IBA rules</p>
+            </div>
           </div>
           <button 
             onClick={generateMatches}
@@ -263,7 +279,7 @@ const Matchmaking = () => {
               Experience Level
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               value={filters.experienceLevel}
               onChange={(e) => setFilters({ ...filters, experienceLevel: e.target.value })}
             >
@@ -280,7 +296,7 @@ const Matchmaking = () => {
               Weight Class
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               value={filters.weightClass}
               onChange={(e) => setFilters({ ...filters, weightClass: e.target.value })}
             >
@@ -306,7 +322,7 @@ const Matchmaking = () => {
             <input
               type="text"
               placeholder="Filter by location..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               value={filters.location}
               onChange={(e) => setFilters({ ...filters, location: e.target.value })}
             />
@@ -426,6 +442,13 @@ const Matchmaking = () => {
         
         {matches.length === 0 ? (
           <div className="text-center py-12">
+            <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mx-auto mb-4">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No matches generated yet</h3>
             <p className="text-gray-600 mb-4">Click "Generate Matches" to create optimal matchups between boxers.</p>
@@ -510,7 +533,7 @@ const Matchmaking = () => {
                   {/* VS */}
                   <div className="flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-red-600 mb-1">VS</div>
+                      <div className="text-2xl font-bold text-green-600 mb-1">VS</div>
                       <div className="text-xs text-gray-600">
                         <div className="flex items-center justify-center">
                           <MapPin className="w-3 h-3 mr-1" />

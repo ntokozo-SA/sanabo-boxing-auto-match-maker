@@ -278,7 +278,14 @@ const Admin = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mx-auto mb-4">
+            <img 
+              src="/images.jpg" 
+              alt="Sanabo Boxing Logo" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading admin data...</p>
         </div>
       </div>
@@ -288,14 +295,20 @@ const Admin = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg shadow-lg p-8 mb-8">
+      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg shadow-lg p-8 mb-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2 flex items-center">
-              <Shield className="w-8 h-8 mr-3" />
+              <div className="w-10 h-10 rounded-lg overflow-hidden shadow-md mr-3">
+                <img 
+                  src="/images.jpg" 
+                  alt="Sanabo Boxing Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
               Admin Panel
             </h1>
-            <p className="text-xl text-red-100">Manage match results and boxer records</p>
+            <p className="text-xl text-green-100">Manage match results and boxer records</p>
           </div>
           <div className="flex items-center space-x-3">
             <button 
@@ -418,6 +431,13 @@ const Admin = () => {
         
         {filteredMatches.length === 0 ? (
           <div className="text-center py-12">
+            <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mx-auto mb-4">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No matches found</h3>
             <p className="text-gray-600">Try adjusting your filters.</p>

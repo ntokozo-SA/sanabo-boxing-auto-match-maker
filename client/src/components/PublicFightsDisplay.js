@@ -48,8 +48,15 @@ const PublicFightsDisplay = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-red-100">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-green-100">
         <div className="text-center">
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mx-auto mb-4">
+            <img 
+              src="/images.jpg" 
+              alt="Sanabo Boxing Logo" 
+              className="w-full h-full object-cover"
+            />
+          </div>
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading today's fights...</p>
         </div>
@@ -59,8 +66,15 @@ const PublicFightsDisplay = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-red-100">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-green-100">
         <div className="text-center">
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mx-auto mb-4">
+            <img 
+              src="/images.jpg" 
+              alt="Sanabo Boxing Logo" 
+              className="w-full h-full object-cover"
+            />
+          </div>
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
@@ -111,20 +125,27 @@ const PublicFightsDisplay = () => {
     return (
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
         {/* Header */}
-        <div className="bg-gradient-to-r from-red-600 to-red-800 text-white p-4">
+        <div className="bg-gradient-to-r from-green-600 to-green-800 text-white p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-sm font-bold">
                 #{index + 1}
               </div>
+              <div className="w-8 h-8 rounded-full overflow-hidden shadow-md mr-2">
+                <img 
+                  src="/images.jpg" 
+                  alt="Sanabo Boxing Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div>
                 <h3 className="font-bold text-lg">Fight #{index + 1}</h3>
-                <p className="text-red-100 text-sm">{match.experienceLevel} • {match.weightClass}</p>
+                <p className="text-green-100 text-sm">{match.experienceLevel} • {match.weightClass}</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-red-100 font-medium">{formatTime(match.scheduledDate)}</div>
-              <div className="text-xs text-red-200">{match.venue}</div>
+              <div className="text-sm text-green-100 font-medium">{formatTime(match.scheduledDate)}</div>
+              <div className="text-xs text-green-200">{match.venue}</div>
             </div>
           </div>
         </div>
@@ -177,7 +198,7 @@ const PublicFightsDisplay = () => {
             {/* VS */}
             <div className="flex items-center justify-center">
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-red-600 mb-3">VS</div>
+                                      <div className="text-3xl md:text-4xl font-bold text-green-600 mb-3">VS</div>
                 <div className="text-xs md:text-sm text-gray-600 space-y-2">
                   <div className="flex items-center justify-center">
                     <Clock className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
@@ -271,18 +292,27 @@ const PublicFightsDisplay = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-2xl">
+      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
           <div className="text-center">
             <div className="flex items-center justify-center mb-3 md:mb-4">
-              <QrCode className="w-8 h-8 md:w-12 md:h-12 mr-2 md:mr-3" />
-              <Smartphone className="w-8 h-8 md:w-12 md:h-12" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden shadow-lg border-4 border-white mr-3 md:mr-4">
+                <img 
+                  src="/images.jpg" 
+                  alt="Sanabo Boxing Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <QrCode className="w-8 h-8 md:w-12 md:h-12" />
+                <Smartphone className="w-8 h-8 md:w-12 md:h-12" />
+              </div>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-3">Sanabo Boxing</h1>
-            <p className="text-lg md:text-2xl text-red-100 mb-1 md:mb-2">Today's Event</p>
-            <p className="text-sm md:text-lg text-red-200">{formatDate(new Date())}</p>
+            <p className="text-lg md:text-2xl text-green-100 mb-1 md:mb-2">Today's Event</p>
+            <p className="text-sm md:text-lg text-green-200">{formatDate(new Date())}</p>
           </div>
         </div>
       </div>
@@ -291,21 +321,49 @@ const PublicFightsDisplay = () => {
         {/* Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md mx-auto mb-2">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-blue-600 mx-auto mb-2 md:mb-3" />
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{upcomingMatches.length}</h3>
             <p className="text-xs md:text-sm text-gray-600 font-medium">Upcoming</p>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md mx-auto mb-2">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <CheckSquare className="w-8 h-8 md:w-10 md:h-10 text-green-600 mx-auto mb-2 md:mb-3" />
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{completedMatches.length}</h3>
             <p className="text-xs md:text-sm text-gray-600 font-medium">Completed</p>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md mx-auto mb-2">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <Users className="w-8 h-8 md:w-10 md:h-10 text-purple-600 mx-auto mb-2 md:mb-3" />
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{matches.length}</h3>
             <p className="text-xs md:text-sm text-gray-600 font-medium">Total Fights</p>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md mx-auto mb-2">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <Target className="w-8 h-8 md:w-10 md:h-10 text-red-600 mx-auto mb-2 md:mb-3" />
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
               {new Set(matches.map(m => m.experienceLevel)).size}
@@ -316,6 +374,15 @@ const PublicFightsDisplay = () => {
 
         {/* Tab Navigation */}
         <div className="flex space-x-2 bg-white p-2 rounded-xl shadow-lg mb-6 md:mb-8">
+          <div className="flex items-center justify-center px-4 py-2">
+            <div className="w-8 h-8 rounded-full overflow-hidden shadow-md mr-2">
+              <img 
+                src="/images.jpg" 
+                alt="Sanabo Boxing Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
           <button
             onClick={() => setActiveTab('upcoming')}
             className={`flex-1 py-3 md:py-4 px-4 md:px-6 rounded-lg font-bold text-sm md:text-lg transition-all duration-300 ${

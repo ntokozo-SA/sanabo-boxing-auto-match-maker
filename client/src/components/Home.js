@@ -8,8 +8,12 @@ const Home = () => {
       {/* Hero Section */}
       <div className="text-center py-12">
         <div className="mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Trophy className="w-10 h-10 text-white" />
+          <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg mx-auto mb-6 border-4 border-white">
+            <img 
+              src="/images.jpg" 
+              alt="Sanabo Boxing Logo" 
+              className="w-full h-full object-cover"
+            />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
             Sanabo Boxing
