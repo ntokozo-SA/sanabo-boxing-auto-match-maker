@@ -227,7 +227,7 @@ async function generateAllMatches(options = {}) {
         const matchRecord = new Match({
           boxer1: match.boxer1._id,
           boxer2: match.boxer2._id,
-          scheduledDate: scheduledDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default to 1 week from now
+          scheduledDate: scheduledDate || new Date(), // Default to today
           venue: venue || 'TBD',
           weightClass: match.weightClass,
           experienceLevel: match.experienceLevel,
@@ -280,7 +280,7 @@ function getRoundDurationForLevel(experienceLevel) {
  */
 async function generateEventQRCode(eventDate) {
   try {
-    const eventUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/public-fights`;
+    const eventUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/fights`;
     const qrCodeDataUrl = await QRCode.toDataURL(eventUrl, {
       width: 300,
       margin: 2,

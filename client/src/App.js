@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import MatchDetails from './components/MatchDetails';
 import EventDetails from './components/EventDetails';
@@ -20,23 +20,25 @@ function App() {
         <Header />
         <main className="container mx-auto px-4 py-8">
           <Routes>
-            <Route path="/" element={<Home />} />
+            {/* Public routes - accessible without login */}
+            <Route path="/" element={<PublicFightsDisplay />} />
+            <Route path="/fights" element={<PublicFightsDisplay />} />
+            <Route path="/public-fights" element={<PublicFightsDisplay />} />
+            <Route path="/event-today" element={<PublicFightsDisplay />} />
+            
+            {/* Admin routes - accessible without login */}
             <Route path="/boxers" element={<Boxers />} />
             <Route path="/matches" element={<Matches />} />
             <Route path="/matches/matchmaking" element={<Matchmaking />} />
             <Route path="/match/:matchId" element={<MatchDetails />} />
             <Route path="/event/:eventDate" element={<EventDetails />} />
             <Route path="/record-result/:matchId" element={<RecordResult />} />
-            <Route path="/fights" element={<PublicFightsDisplay />} />
-            <Route path="/public-fights" element={<PublicFightsDisplay />} />
             <Route path="/boxer/:boxerId/record" element={<BoxerRecord />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={
-              <div className="text-center py-20">
-                <h1 className="text-4xl font-bold text-gray-800 mb-4">404 - Page Not Found</h1>
-                <p className="text-gray-600">The page you're looking for doesn't exist.</p>
-              </div>
-            } />
+            <Route path="/home" element={<Home />} />
+            
+            {/* Catch all other routes and redirect to public fights */}
+            <Route path="*" element={<Navigate to="/fights" replace />} />
           </Routes>
         </main>
       </div>

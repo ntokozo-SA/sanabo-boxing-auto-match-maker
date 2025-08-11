@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const { demoDataAPI } = require('./utils/demoData');
 require('dotenv').config();
 
 const app = express();
@@ -88,6 +89,14 @@ app.listen(PORT, () => {
   console.log(`📊 API Health Check: http://localhost:${PORT}/api/health`);
   console.log(`🥊 Boxers API: http://localhost:${PORT}/api/boxers`);
   console.log(`🏆 Matches API: http://localhost:${PORT}/api/matches`);
+  
+  // Initialize all boxers to ensure they have proper records
+  try {
+    const allBoxers = demoDataAPI.initializeAllBoxers();
+    console.log(`✅ Initialized ${allBoxers.length} boxers with proper records`);
+  } catch (error) {
+    console.error('❌ Error initializing boxers:', error);
+  }
 });
 
 module.exports = app; 

@@ -333,7 +333,7 @@ const MatchDetails = () => {
             {match.officials.judges && match.officials.judges.length > 0 && (
               <>
                 {match.officials.judges.map((judge, index) => (
-                  <div key={index} className="text-center">
+                  <div key={`judge-${judge.name}-${index}`} className="text-center">
                     <h3 className="font-semibold text-gray-900 mb-1">Judge {index + 1}</h3>
                     <p className="text-gray-600">{judge.name}</p>
                     {judge.license && (

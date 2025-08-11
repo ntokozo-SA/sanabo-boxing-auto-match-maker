@@ -146,11 +146,11 @@ const Matchmaking = () => {
   const getWinnerDisplay = (match) => {
     if (!match.result) return null;
     
-    if (match.result.winner) {
+    if (match.result.winner && match.result.winner.name) {
       return {
         name: match.result.winner.name,
-        method: match.result.method,
-        rounds: match.result.rounds
+        method: match.result.method || 'Unknown',
+        rounds: match.result.rounds || 0
       };
     }
     return null;
@@ -460,21 +460,24 @@ const Matchmaking = () => {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Boxer 1 */}
+                  {/* Red Corner */}
                   <div className={`text-center p-3 rounded-lg border-2 transition-all ${
                     match.result ? 
                       (isWinner(match.boxer1._id, match.result) ? 'border-green-500 bg-green-50' : 
                        isLoser(match.boxer1._id, match.result) ? 'border-red-500 bg-red-50' : 
-                       'border-gray-200') : 
-                      'border-gray-200 hover:border-red-300'
+                       'border-red-300') : 
+                      'border-red-300 hover:border-red-400'
                   }`}>
-                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-200 flex items-center justify-center relative">
-                      <User className="w-8 h-8 text-gray-600" />
+                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-red-100 flex items-center justify-center relative">
+                      <User className="w-8 h-8 text-red-600" />
                       {match.result && isWinner(match.boxer1._id, match.result) && (
                         <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
                           <Crown className="w-3 h-3 text-white" />
                         </div>
                       )}
+                    </div>
+                    <div className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded mb-2">
+                      RED CORNER
                     </div>
                     <h4 className={`font-medium ${
                       match.result ? 
@@ -536,21 +539,24 @@ const Matchmaking = () => {
                     </div>
                   </div>
                   
-                  {/* Boxer 2 */}
+                  {/* Blue Corner */}
                   <div className={`text-center p-3 rounded-lg border-2 transition-all ${
                     match.result ? 
                       (isWinner(match.boxer2._id, match.result) ? 'border-green-500 bg-green-50' : 
                        isLoser(match.boxer2._id, match.result) ? 'border-red-500 bg-red-50' : 
-                       'border-gray-200') : 
-                      'border-gray-200 hover:border-red-300'
+                       'border-blue-300') : 
+                      'border-blue-300 hover:border-blue-400'
                   }`}>
-                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-200 flex items-center justify-center relative">
-                      <User className="w-8 h-8 text-gray-600" />
+                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-blue-100 flex items-center justify-center relative">
+                      <User className="w-8 h-8 text-blue-600" />
                       {match.result && isWinner(match.boxer2._id, match.result) && (
                         <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
                           <Crown className="w-3 h-3 text-white" />
                         </div>
                       )}
+                    </div>
+                    <div className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded mb-2">
+                      BLUE CORNER
                     </div>
                     <h4 className={`font-medium ${
                       match.result ? 
@@ -591,40 +597,40 @@ const Matchmaking = () => {
                     <span className="text-gray-600">{match.roundDuration} min rounds</span>
                   </div>
                   
-                  {/* Result Details for Completed Matches */}
-                  {match.result && (
-                    <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Medal className="w-4 h-4 text-blue-600 mr-2" />
-                          <span className="text-sm font-semibold text-blue-800">Fight Result</span>
-                        </div>
-                        <span className="text-xs text-blue-600">
-                          {new Date(match.result.recordedAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-xs">
-                        <div>
-                          <span className="font-medium text-blue-700">Method:</span>
-                          <span className="ml-1 text-blue-800">{match.result.method}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-blue-700">Rounds:</span>
-                          <span className="ml-1 text-blue-800">{match.result.rounds}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-blue-700">Winner:</span>
-                          <span className="ml-1 text-blue-800 font-semibold">{match.result.winner.name}</span>
-                        </div>
-                      </div>
-                      {match.result.notes && (
-                        <div className="mt-2 text-xs">
-                          <span className="font-medium text-blue-700">Notes:</span>
-                          <span className="ml-1 text-blue-800">{match.result.notes}</span>
+                                        {/* Result Details for Completed Matches */}
+                      {match.result && (
+                        <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <Medal className="w-4 h-4 text-blue-600 mr-2" />
+                              <span className="text-sm font-semibold text-blue-800">Fight Result</span>
+                            </div>
+                            <span className="text-xs text-blue-600">
+                              {match.result.recordedAt ? new Date(match.result.recordedAt).toLocaleDateString() : 'Unknown'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-xs">
+                            <div>
+                              <span className="font-medium text-blue-700">Method:</span>
+                              <span className="ml-1 text-blue-800">{match.result.method || 'Unknown'}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-blue-700">Rounds:</span>
+                              <span className="ml-1 text-blue-800">{match.result.rounds || 'Unknown'}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-blue-700">Winner:</span>
+                              <span className="ml-1 text-blue-800 font-semibold">{match.result.winner?.name || 'Unknown'}</span>
+                            </div>
+                          </div>
+                          {match.result.notes && (
+                            <div className="mt-2 text-xs">
+                              <span className="font-medium text-blue-700">Notes:</span>
+                              <span className="ml-1 text-blue-800">{match.result.notes}</span>
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
-                  )}
                   
                   {/* Record Result Button for Matches without Results */}
                   {!match.result && match.status === 'Scheduled' && (
@@ -674,8 +680,11 @@ const Matchmaking = () => {
             <div className="p-6">
               {/* Match Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">Boxer 1</h3>
+                <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                  <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <div className="w-4 h-4 bg-red-600 rounded mr-2"></div>
+                    Red Corner
+                  </h3>
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {selectedMatch.boxer1.name.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -687,10 +696,13 @@ const Matchmaking = () => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">Boxer 2</h3>
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <div className="w-4 h-4 bg-blue-600 rounded mr-2"></div>
+                    Blue Corner
+                  </h3>
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {selectedMatch.boxer2.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                     </div>
                     <div>

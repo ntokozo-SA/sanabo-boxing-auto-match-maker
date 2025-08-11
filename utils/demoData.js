@@ -11,6 +11,9 @@ let demoBoxers = [
     contactInfo: { phone: '+27-82-123-4567', email: 'thabo.maseko@email.com' },
     photoUrl: 'https://via.placeholder.com/150/ff6b6b/ffffff?text=TM',
     boutsCount: 28,
+    record: { wins: 18, losses: 8, draws: 2, noContests: 0 },
+    winMethods: { decision: 12, tko: 4, ko: 2 },
+    lossMethods: { decision: 6, tko: 2 },
     isActive: true,
     createdAt: new Date('2023-01-15'),
     updatedAt: new Date('2024-01-15')
@@ -25,6 +28,9 @@ let demoBoxers = [
     contactInfo: { phone: '+27-82-234-5678', email: 'lerato.ndlovu@email.com' },
     photoUrl: 'https://via.placeholder.com/150/4ecdc4/ffffff?text=LN',
     boutsCount: 22,
+    record: { wins: 15, losses: 5, draws: 2, noContests: 0 },
+    winMethods: { decision: 10, tko: 3, ko: 2 },
+    lossMethods: { decision: 3, tko: 2 },
     isActive: true,
     createdAt: new Date('2023-02-10'),
     updatedAt: new Date('2024-01-20')
@@ -39,6 +45,9 @@ let demoBoxers = [
     contactInfo: { phone: '+27-82-345-6789', email: 'sipho.khumalo@email.com' },
     photoUrl: 'https://via.placeholder.com/150/45b7d1/ffffff?text=SK',
     boutsCount: 31,
+    record: { wins: 22, losses: 7, draws: 2, noContests: 0 },
+    winMethods: { decision: 14, tko: 5, ko: 3 },
+    lossMethods: { decision: 4, tko: 3 },
     isActive: true,
     createdAt: new Date('2023-01-20'),
     updatedAt: new Date('2024-01-25')
@@ -53,6 +62,9 @@ let demoBoxers = [
     contactInfo: { phone: '+27-82-456-7890', email: 'nokuthula.dlamini@email.com' },
     photoUrl: 'https://via.placeholder.com/150/96ceb4/ffffff?text=ND',
     boutsCount: 25,
+    record: { wins: 16, losses: 7, draws: 2, noContests: 0 },
+    winMethods: { decision: 10, tko: 4, ko: 2 },
+    lossMethods: { decision: 5, tko: 2 },
     isActive: true,
     createdAt: new Date('2023-03-05'),
     updatedAt: new Date('2024-01-30')
@@ -67,6 +79,9 @@ let demoBoxers = [
     contactInfo: { phone: '+27-82-567-8901', email: 'mandla.zulu@email.com' },
     photoUrl: 'https://via.placeholder.com/150/ffeaa7/666666?text=MZ',
     boutsCount: 29,
+    record: { wins: 20, losses: 7, draws: 2, noContests: 0 },
+    winMethods: { decision: 12, tko: 5, ko: 3 },
+    lossMethods: { decision: 4, tko: 3 },
     isActive: true,
     createdAt: new Date('2023-02-15'),
     updatedAt: new Date('2024-02-01')
@@ -81,6 +96,9 @@ let demoBoxers = [
     contactInfo: { phone: '+27-82-678-9012', email: 'zanele.mokoena@email.com' },
     photoUrl: 'https://via.placeholder.com/150/dda0dd/ffffff?text=ZM',
     boutsCount: 20,
+    record: { wins: 12, losses: 6, draws: 2, noContests: 0 },
+    winMethods: { decision: 8, tko: 3, ko: 1 },
+    lossMethods: { decision: 4, tko: 2 },
     isActive: true,
     createdAt: new Date('2023-04-10'),
     updatedAt: new Date('2024-02-05')
@@ -368,6 +386,23 @@ let demoMatches = [
   }
 ];
 
+// Initialize boxer records if they don't exist
+const initializeBoxerRecords = (boxer) => {
+  if (!boxer.record) {
+    boxer.record = { wins: 0, losses: 0, draws: 0, noContests: 0 };
+  }
+  if (!boxer.boutsCount) {
+    boxer.boutsCount = 0;
+  }
+  if (!boxer.winMethods) {
+    boxer.winMethods = { decision: 0, tko: 0, ko: 0, retirement: 0, disqualification: 0, walkover: 0 };
+  }
+  if (!boxer.lossMethods) {
+    boxer.lossMethods = { decision: 0, tko: 0, ko: 0, retirement: 0, disqualification: 0, walkover: 0 };
+  }
+  return boxer;
+};
+
 // Generate additional boxers to reach 110 total
 // Cache for generated boxers to ensure consistency
 let cachedAdditionalBoxers = null;
@@ -525,7 +560,7 @@ const generateAdditionalBoxers = () => {
 const demoDataAPI = {
   // Boxer functions
   getAllBoxers: (filters = {}) => {
-    const allBoxers = [...demoBoxers, ...generateAdditionalBoxers()];
+    const allBoxers = [...demoBoxers, ...generateAdditionalBoxers()].map(initializeBoxerRecords);
     let filteredBoxers = [...allBoxers];
     
     if (filters.search) {
@@ -552,7 +587,20 @@ const demoDataAPI = {
   
   getBoxerById: (id) => {
     const allBoxers = [...demoBoxers, ...generateAdditionalBoxers()];
-    return allBoxers.find(boxer => boxer._id === id);
+    const boxer = allBoxers.find(boxer => boxer._id === id);
+    if (boxer) {
+      return initializeBoxerRecords(boxer);
+    }
+    return null;
+  },
+
+  // Initialize all boxers to ensure they have proper records
+  initializeAllBoxers: () => {
+    const allBoxers = [...demoBoxers, ...generateAdditionalBoxers()];
+    allBoxers.forEach(boxer => {
+      initializeBoxerRecords(boxer);
+    });
+    return allBoxers;
   },
   
   createBoxer: (boxerData) => {
@@ -642,6 +690,16 @@ const demoDataAPI = {
       demoMatches[index].status = 'Completed';
       demoMatches[index].updatedAt = new Date();
       return demoMatches[index];
+    }
+    return null;
+  },
+  
+  deleteMatch: (id) => {
+    const index = demoMatches.findIndex(match => match._id === id);
+    if (index !== -1) {
+      const deletedMatch = demoMatches[index];
+      demoMatches.splice(index, 1);
+      return deletedMatch;
     }
     return null;
   }

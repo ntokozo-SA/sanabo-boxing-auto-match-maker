@@ -1,274 +1,109 @@
-# 🥊 Sanabo Boxing Matchmaking System
+# Sanabo Boxing Matchmaking System
 
-A comprehensive amateur boxing matchmaking system that automates the process of creating fair and safe matches between boxers using International Boxing Association (IBA) rules.
+A comprehensive boxing matchmaking system with public event display functionality.
 
-## 🌟 Features
+## Features
 
-### 🎯 Smart Matchmaking
-- **IBA Rule Compliance**: Enforces weight differences, age gaps, and experience level compatibility
-- **Automatic Pairing**: Generates optimal matchups between available boxers
-- **Safety First**: Ensures all matches meet safety standards for amateur boxing
+### Public Event Display
+- **Single Public Page**: All fights for the current event day are displayed on one page at `/fights`
+- **Mobile-Friendly**: Responsive design optimized for mobile devices
+- **Read-Only**: Public access without admin capabilities
+- **Real-Time Updates**: Shows live fight information and results
+- **QR Code Access**: Event attendees can scan QR codes to access the public page
 
-### 👥 Boxer Management
-- **Comprehensive Profiles**: Track boxer details, experience, weight, age, and fight history
-- **South African Focus**: Built with 85+ Gauteng boxers dataset
-- **Real-time Filtering**: Search and filter boxers by various criteria
+### Event Management
+- **Today's Fights Only**: All matches are scheduled for the current day
+- **Upcoming vs Completed**: Tabbed view to separate scheduled and finished fights
+- **Fight Details**: Complete information including boxers, venues, times, and results
+- **Result Tracking**: Real-time display of fight outcomes and methods
 
-### 🥊 Match Management
-- **QR Code Integration**: Each match gets a unique QR code for easy access
-- **Result Tracking**: Record match outcomes, winners, and fight details
-- **Status Management**: Track matches from scheduled to completed
+### System Architecture
+- **Public Routes**: Only the fights page is accessible without authentication
+- **Admin Redirect**: All admin routes redirect to the public page
+- **Clean Navigation**: Minimal header with only essential public information
 
-### 📱 Modern Web Interface
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Intuitive Navigation**: Easy-to-use interface for non-technical users
-- **Real-time Updates**: Live data without page refreshes
+## Quick Start
 
-## 🏗️ Technology Stack
-
-### Backend
-- **Node.js** - Server runtime
-- **Express.js** - Web framework
-- **MongoDB** - Database (with in-memory fallback for demo)
-- **Mongoose** - Object modeling for MongoDB
-
-### Frontend
-- **React.js** - User interface library
-- **React Router** - Client-side routing
-- **Tailwind CSS** - Styling framework
-- **Axios** - HTTP client
-- **Lucide React** - Icon library
-
-### Matchmaking Engine
-- **Custom Algorithm** - IBA rule implementation
-- **QR Code Generation** - Match identification
-- **Validation System** - Data integrity checks
-
-## 📋 IBA Matchmaking Rules
-
-The system implements the following International Boxing Association rules:
-
-### Weight Class Differences
-| Experience Level | Max Weight Difference |
-|------------------|---------------------|
-| Schools/Junior   | 2kg                 |
-| Youth            | 3kg                 |
-| Elite            | 4kg                 |
-| Novice           | 2kg                 |
-
-### Age Restrictions
-| Experience Level | Max Age Difference |
-|------------------|-------------------|
-| Schools          | 1 year            |
-| Junior           | 2 years           |
-| Youth            | 2 years           |
-| Elite/Novice     | No limit          |
-
-### Experience Level Compatibility
-- Boxers can match with same or adjacent experience levels
-- Novice boxers have additional bout count restrictions (≤5 difference)
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn package manager
-- MongoDB (optional - system works with in-memory data)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/sanabo-boxing-matchmaking.git
-   cd sanabo-boxing-matchmaking
-   ```
-
-2. **Install dependencies**
+1. **Install Dependencies**:
    ```bash
    npm install
-   cd client
-   npm install
-   cd ..
    ```
 
-3. **Environment setup**
+2. **Start the Application**:
    ```bash
-   # Create .env file in root directory
-   cp .env.example .env
-   # Edit .env with your MongoDB connection string (optional)
-   ```
-
-4. **Start the application**
-   ```bash
-   # Start backend server
-   npm run dev
-   
-   # In a new terminal, start frontend
-   cd client
    npm start
    ```
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
+3. **Access the Public Page**:
+   - Main URL: `http://localhost:3000/fights`
+   - Alternative URLs: `/`, `/public-fights`, `/event-today`
+   - All redirect to the same public fights display
 
-## 📖 Usage Guide
+## Public Page Features
 
-### For Boxing Club Administrators
+### Navigation
+- **Today's Fights**: Main navigation link
+- **Public View Indicator**: Shows this is a public display
+- **Mobile Menu**: Responsive navigation for mobile devices
 
-1. **View Boxers**
-   - Navigate to the "Boxers" page
-   - Browse the 85+ Gauteng boxers in the system
-   - Use filters to find specific boxers
+### Fight Display
+- **Fight Cards**: Individual cards for each match
+- **Red/Blue Corners**: Authentic boxing terminology
+- **Winner/Loser Indicators**: Visual indicators for completed fights
+- **Result Details**: Method, rounds, and timing information
+- **Statistics**: Overview of upcoming, completed, and total fights
 
-2. **Generate Matches**
-   - Go to "Matchmaking" page
-   - Set any desired filters (experience level, weight class, location)
-   - Click "Generate Matches" to create optimal pairings
+### Mobile Optimization
+- **Responsive Grid**: Adapts to different screen sizes
+- **Touch-Friendly**: Optimized for mobile interaction
+- **Readable Text**: Appropriate font sizes for mobile devices
+- **Compact Layout**: Efficient use of screen space
 
-3. **Manage Matches**
-   - View all scheduled matches on the "Matches" page
-   - Record match results and outcomes
-   - Access match details via QR codes
+## QR Code Integration
 
-### For Coaches and Officials
+- **Single QR Code**: One QR code for the entire event
+- **Direct Access**: QR codes point directly to `/fights`
+- **No Authentication**: Public access without login requirements
+- **Event-Specific**: Shows only today's fights
 
-1. **Match Details**
-   - Scan QR codes to access match information
-   - View boxer profiles and statistics
-   - Check match compliance with IBA rules
+## Technical Details
 
-2. **Result Recording**
-   - Update match outcomes after fights
-   - Track winner/loser information
-   - Add fight notes and details
+### Routes
+- `/fights` - Main public page (also accessible via `/`, `/public-fights`, `/event-today`)
+- All other routes redirect to `/fights` for public access
 
-## 🗄️ Data Structure
+### Data Filtering
+- **Date Filter**: Only shows matches scheduled for today
+- **Status Filter**: Separates upcoming and completed fights
+- **Real-Time**: Updates automatically as fights are completed
 
-### Boxer Profile
-```javascript
-{
-  name: "Thabo 'The Lion' Maseko",
-  weightKg: 75,
-  experienceLevel: "Elite",
-  age: 25,
-  location: "Soweto, Johannesburg",
-  contactInfo: { phone: "+27-82-123-4567", email: "..." },
-  boutsCount: 28,
-  isActive: true
-}
-```
+### Security
+- **Read-Only Access**: No editing capabilities on public page
+- **Admin Protection**: All admin routes redirect to public page
+- **Clean Interface**: No sensitive information exposed
 
-### Match Structure
-```javascript
-{
-  boxer1: "Boxer ID",
-  boxer2: "Boxer ID",
-  scheduledDate: "2024-02-15T18:00:00Z",
-  venue: "Central Boxing Arena",
-  weightClass: "Welterweight",
-  experienceLevel: "Elite",
-  rounds: 4,
-  roundDuration: 3,
-  qrCodeUrl: "data:image/png;base64...",
-  matchId: "MATCH-20240215-001",
-  status: "Scheduled"
-}
-```
+## Development
 
-## 🌍 South African Dataset
+### Key Components
+- `PublicFightsDisplay.js` - Main public page component
+- `Header.js` - Simplified navigation for public view
+- `App.js` - Route configuration with redirects
+- `matchmaking.js` - Updated to use today's date by default
 
-The system includes a comprehensive dataset of 85+ boxers from Gauteng, South Africa:
+### API Endpoints
+- `GET /api/matches?scheduledDate=YYYY-MM-DD` - Get today's fights
+- `POST /api/matches/matchmaking` - Generate matches for today
 
-### Geographic Coverage
-- **Johannesburg**: Soweto, Sandton, Randburg, Rosebank, Fourways, Bryanston, Melville, Greenside, Illovo, Houghton, Diepsloot, Tembisa, Alexandra, Katlehong, Midrand, Roodepoort, Krugersdorp, Benoni, Boksburg, Germiston, Alberton, Kempton Park, Edenvale, Brakpan, Springs, Nigel
-- **Pretoria**: Pretoria Central, Centurion, Mamelodi, Soshanguve, Atteridgeville, Hatfield, Lynnwood, Arcadia, Brooklyn
+## Event Management
 
-### Experience Distribution
-- **Elite**: 20 boxers (ages 20-29, 15-34 bouts)
-- **Youth**: 25 boxers (ages 16-17, 6-15 bouts)
-- **Junior**: 25 boxers (ages 13-15, 3-10 bouts)
-- **Schools**: 25 boxers (ages 10-12, 1-5 bouts)
-- **Novice**: 15 boxers (ages 18-29, 0-4 bouts)
+### Match Generation
+- All matches are created for today's date by default
+- QR codes point to the single public page
+- No individual fight URLs needed
 
-## 🔧 API Endpoints
+### Result Recording
+- Results are displayed in real-time on the public page
+- Winner/loser indicators with visual styling
+- Complete result details including method and timing
 
-### Boxers
-- `GET /api/boxers` - Get all boxers with filtering
-- `GET /api/boxers/:id` - Get specific boxer
-- `POST /api/boxers` - Create new boxer
-- `PUT /api/boxers/:id` - Update boxer
-- `DELETE /api/boxers/:id` - Deactivate boxer
-
-### Matches
-- `GET /api/matches` - Get all matches
-- `GET /api/matches/:id` - Get specific match
-- `GET /api/matches/match/:matchId` - Get match by QR code ID
-- `POST /api/matches/matchmaking` - Generate new matches
-- `POST /api/matches/:id/result` - Record match result
-
-## 🛠️ Development
-
-### Project Structure
-```
-sanabo/
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── App.js         # Main app component
-│   │   └── index.js       # Entry point
-│   └── package.json
-├── models/                 # MongoDB schemas
-├── routes/                 # API routes
-├── utils/                  # Utility functions
-│   ├── matchmaking.js     # Matchmaking algorithm
-│   └── demoData.js        # Demo data generator
-├── server.js              # Express server
-└── package.json
-```
-
-### Running Tests
-```bash
-# Backend tests
-npm test
-
-# Frontend tests
-cd client
-npm test
-```
-
-### Building for Production
-```bash
-# Build frontend
-cd client
-npm run build
-
-# Start production server
-npm start
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **International Boxing Association (IBA)** for matchmaking rules
-- **Gauteng Boxing Federation** for regional context
-- **South African Boxing Community** for inspiration
-
-## 📞 Support
-
-For support, email support@sanabo-boxing.com or create an issue in this repository.
-
----
-
-**Built with ❤️ for the South African boxing community**
+This system provides a streamlined, mobile-friendly public display for boxing events with all fights consolidated on a single page for easy access by event attendees.

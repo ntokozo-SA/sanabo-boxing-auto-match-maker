@@ -15,7 +15,8 @@ import {
   TrendingUp,
   CheckSquare,
   QrCode,
-  Smartphone
+  Smartphone,
+  MapPin
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -26,17 +27,19 @@ const PublicFightsDisplay = () => {
   const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' or 'completed'
 
   useEffect(() => {
-    fetchAllMatches();
+    fetchTodaysMatches();
   }, []);
 
-  const fetchAllMatches = async () => {
+  const fetchTodaysMatches = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/matches?limit=100');
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0];
+      const response = await axios.get(`/api/matches?scheduledDate=${today}&limit=100`);
       setMatches(response.data.data);
       setError(null);
     } catch (err) {
-      setError('Failed to load fights');
+      setError('Failed to load today\'s fights');
       console.error('Error fetching matches:', err);
     } finally {
       setLoading(false);
@@ -48,7 +51,7 @@ const PublicFightsDisplay = () => {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-red-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading fights...</p>
+          <p className="text-gray-600">Loading today's fights...</p>
         </div>
       </div>
     );
@@ -120,27 +123,30 @@ const PublicFightsDisplay = () => {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-red-100 font-medium">{formatDate(match.scheduledDate)}</div>
-              <div className="text-xs text-red-200">{formatTime(match.scheduledDate)}</div>
+              <div className="text-sm text-red-100 font-medium">{formatTime(match.scheduledDate)}</div>
+              <div className="text-xs text-red-200">{match.venue}</div>
             </div>
           </div>
         </div>
 
         {/* Fighters */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Fighter 1 */}
-            <div className={`text-center p-4 rounded-xl border-2 transition-all duration-300 ${
+        <div className="p-4 md:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Red Corner */}
+            <div className={`text-center p-3 md:p-4 rounded-xl border-2 transition-all duration-300 ${
               match.result ? 
                 (isWinner(match.boxer1._id, match.result) ? 'border-green-500 bg-green-50 shadow-lg' : 
                  isLoser(match.boxer1._id, match.result) ? 'border-red-500 bg-red-50 shadow-lg' : 
-                 'border-gray-200') : 
-                'border-gray-200 hover:border-red-300 hover:shadow-md'
+                 'border-red-300') : 
+                'border-red-300 hover:border-red-400 hover:shadow-md'
             }`}>
-              <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+              <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg">
                 {match.boxer1.name.split(' ').map(n => n[0]).join('').toUpperCase()}
               </div>
-              <h4 className={`font-bold text-lg ${
+              <div className="bg-red-600 text-white text-xs md:text-sm font-bold px-2 md:px-3 py-1 rounded-full mb-3">
+                RED CORNER
+              </div>
+              <h4 className={`font-bold text-base md:text-lg ${
                 match.result ? 
                   (isWinner(match.boxer1._id, match.result) ? 'text-green-800' : 
                    isLoser(match.boxer1._id, match.result) ? 'text-red-800' : 
@@ -149,21 +155,21 @@ const PublicFightsDisplay = () => {
               }`}>
                 {match.boxer1.name}
               </h4>
-              <p className="text-sm text-gray-600 mb-2">{match.boxer1.experienceLevel}</p>
+              <p className="text-xs md:text-sm text-gray-600 mb-2">{match.boxer1.experienceLevel}</p>
               <div className="flex items-center justify-center text-xs text-gray-500 mb-2">
                 <Scale className="w-3 h-3 mr-1" />
                 {match.boxer1.weightKg}kg
               </div>
               {match.result && isWinner(match.boxer1._id, match.result) && (
-                <div className="flex items-center justify-center mt-2 text-green-700 bg-green-100 px-3 py-1 rounded-full">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  <span className="text-sm font-bold">WINNER</span>
+                <div className="flex items-center justify-center mt-2 text-green-700 bg-green-100 px-2 md:px-3 py-1 rounded-full">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="text-xs md:text-sm font-bold">WINNER</span>
                 </div>
               )}
               {match.result && isLoser(match.boxer1._id, match.result) && (
-                <div className="flex items-center justify-center mt-2 text-red-700 bg-red-100 px-3 py-1 rounded-full">
-                  <XCircle className="w-4 h-4 mr-1" />
-                  <span className="text-sm font-bold">LOSER</span>
+                <div className="flex items-center justify-center mt-2 text-red-700 bg-red-100 px-2 md:px-3 py-1 rounded-full">
+                  <XCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="text-xs md:text-sm font-bold">LOSER</span>
                 </div>
               )}
             </div>
@@ -171,32 +177,35 @@ const PublicFightsDisplay = () => {
             {/* VS */}
             <div className="flex items-center justify-center">
               <div className="text-center">
-                <div className="text-4xl font-bold text-red-600 mb-3">VS</div>
-                <div className="text-sm text-gray-600 space-y-2">
+                <div className="text-3xl md:text-4xl font-bold text-red-600 mb-3">VS</div>
+                <div className="text-xs md:text-sm text-gray-600 space-y-2">
                   <div className="flex items-center justify-center">
-                    <Clock className="w-4 h-4 mr-2" />
+                    <Clock className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                     {match.rounds} rounds
                   </div>
                   <div className="flex items-center justify-center">
-                    <Target className="w-4 h-4 mr-2" />
-                    {match.venue}
+                    <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                    <span className="truncate max-w-20 md:max-w-none">{match.venue}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Fighter 2 */}
-            <div className={`text-center p-4 rounded-xl border-2 transition-all duration-300 ${
+            {/* Blue Corner */}
+            <div className={`text-center p-3 md:p-4 rounded-xl border-2 transition-all duration-300 ${
               match.result ? 
                 (isWinner(match.boxer2._id, match.result) ? 'border-green-500 bg-green-50 shadow-lg' : 
                  isLoser(match.boxer2._id, match.result) ? 'border-red-500 bg-red-50 shadow-lg' : 
-                 'border-gray-200') : 
-                'border-gray-200 hover:border-red-300 hover:shadow-md'
+                 'border-blue-300') : 
+                'border-blue-300 hover:border-blue-400 hover:shadow-md'
             }`}>
-              <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+              <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg">
                 {match.boxer2.name.split(' ').map(n => n[0]).join('').toUpperCase()}
               </div>
-              <h4 className={`font-bold text-lg ${
+              <div className="bg-blue-600 text-white text-xs md:text-sm font-bold px-2 md:px-3 py-1 rounded-full mb-3">
+                BLUE CORNER
+              </div>
+              <h4 className={`font-bold text-base md:text-lg ${
                 match.result ? 
                   (isWinner(match.boxer2._id, match.result) ? 'text-green-800' : 
                    isLoser(match.boxer2._id, match.result) ? 'text-red-800' : 
@@ -205,21 +214,21 @@ const PublicFightsDisplay = () => {
               }`}>
                 {match.boxer2.name}
               </h4>
-              <p className="text-sm text-gray-600 mb-2">{match.boxer2.experienceLevel}</p>
+              <p className="text-xs md:text-sm text-gray-600 mb-2">{match.boxer2.experienceLevel}</p>
               <div className="flex items-center justify-center text-xs text-gray-500 mb-2">
                 <Scale className="w-3 h-3 mr-1" />
                 {match.boxer2.weightKg}kg
               </div>
               {match.result && isWinner(match.boxer2._id, match.result) && (
-                <div className="flex items-center justify-center mt-2 text-green-700 bg-green-100 px-3 py-1 rounded-full">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  <span className="text-sm font-bold">WINNER</span>
+                <div className="flex items-center justify-center mt-2 text-green-700 bg-green-100 px-2 md:px-3 py-1 rounded-full">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="text-xs md:text-sm font-bold">WINNER</span>
                 </div>
               )}
               {match.result && isLoser(match.boxer2._id, match.result) && (
-                <div className="flex items-center justify-center mt-2 text-red-700 bg-red-100 px-3 py-1 rounded-full">
-                  <XCircle className="w-4 h-4 mr-1" />
-                  <span className="text-sm font-bold">LOSER</span>
+                <div className="flex items-center justify-center mt-2 text-red-700 bg-red-100 px-2 md:px-3 py-1 rounded-full">
+                  <XCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  <span className="text-xs md:text-sm font-bold">LOSER</span>
                 </div>
               )}
             </div>
@@ -227,29 +236,29 @@ const PublicFightsDisplay = () => {
 
           {/* Result Details (for completed fights) */}
           {match.result && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+            <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
               <h5 className="font-bold text-gray-900 mb-3 flex items-center">
-                <Trophy className="w-5 h-5 mr-2 text-yellow-600" />
+                <Trophy className="w-4 h-4 md:w-5 md:h-5 mr-2 text-yellow-600" />
                 Fight Result
               </h5>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="bg-white p-3 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 text-xs md:text-sm">
+                <div className="bg-white p-2 md:p-3 rounded-lg">
                   <span className="font-semibold text-gray-700">Method:</span>
                   <span className="ml-2 text-gray-900">{match.result.method}</span>
                 </div>
-                <div className="bg-white p-3 rounded-lg">
+                <div className="bg-white p-2 md:p-3 rounded-lg">
                   <span className="font-semibold text-gray-700">Rounds:</span>
                   <span className="ml-2 text-gray-900">{match.result.rounds}</span>
                 </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-semibold text-gray-700">Date:</span>
+                <div className="bg-white p-2 md:p-3 rounded-lg">
+                  <span className="font-semibold text-gray-700">Time:</span>
                   <span className="ml-2 text-gray-900">
-                    {new Date(match.result.recordedAt).toLocaleDateString()}
+                    {formatTime(match.result.recordedAt)}
                   </span>
                 </div>
               </div>
               {match.result.notes && (
-                <div className="mt-4 bg-white p-3 rounded-lg text-sm">
+                <div className="mt-3 md:mt-4 bg-white p-2 md:p-3 rounded-lg text-xs md:text-sm">
                   <span className="font-semibold text-gray-700">Notes:</span>
                   <span className="ml-2 text-gray-900">{match.result.notes}</span>
                 </div>
@@ -265,92 +274,92 @@ const PublicFightsDisplay = () => {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100">
       {/* Header */}
       <div className="bg-gradient-to-r from-red-600 to-red-800 text-white shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <QrCode className="w-12 h-12 mr-3" />
-              <Smartphone className="w-12 h-12" />
+            <div className="flex items-center justify-center mb-3 md:mb-4">
+              <QrCode className="w-8 h-8 md:w-12 md:h-12 mr-2 md:mr-3" />
+              <Smartphone className="w-8 h-8 md:w-12 md:h-12" />
             </div>
-            <h1 className="text-5xl font-bold mb-3">Sanabo Boxing</h1>
-            <p className="text-2xl text-red-100 mb-2">Event Fights Display</p>
-            <p className="text-lg text-red-200">Scan QR code to view live fight information</p>
+            <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-3">Sanabo Boxing</h1>
+            <p className="text-lg md:text-2xl text-red-100 mb-1 md:mb-2">Today's Event</p>
+            <p className="text-sm md:text-lg text-red-200">{formatDate(new Date())}</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition-transform">
-            <TrendingUp className="w-10 h-10 text-blue-600 mx-auto mb-3" />
-            <h3 className="text-3xl font-bold text-gray-900">{upcomingMatches.length}</h3>
-            <p className="text-gray-600 font-medium">Upcoming Fights</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-blue-600 mx-auto mb-2 md:mb-3" />
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{upcomingMatches.length}</h3>
+            <p className="text-xs md:text-sm text-gray-600 font-medium">Upcoming</p>
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition-transform">
-            <CheckSquare className="w-10 h-10 text-green-600 mx-auto mb-3" />
-            <h3 className="text-3xl font-bold text-gray-900">{completedMatches.length}</h3>
-            <p className="text-gray-600 font-medium">Completed Fights</p>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <CheckSquare className="w-8 h-8 md:w-10 md:h-10 text-green-600 mx-auto mb-2 md:mb-3" />
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{completedMatches.length}</h3>
+            <p className="text-xs md:text-sm text-gray-600 font-medium">Completed</p>
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition-transform">
-            <Users className="w-10 h-10 text-purple-600 mx-auto mb-3" />
-            <h3 className="text-3xl font-bold text-gray-900">{matches.length}</h3>
-            <p className="text-gray-600 font-medium">Total Fights</p>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <Users className="w-8 h-8 md:w-10 md:h-10 text-purple-600 mx-auto mb-2 md:mb-3" />
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{matches.length}</h3>
+            <p className="text-xs md:text-sm text-gray-600 font-medium">Total Fights</p>
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition-transform">
-            <Target className="w-10 h-10 text-red-600 mx-auto mb-3" />
-            <h3 className="text-3xl font-bold text-gray-900">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 text-center transform hover:scale-105 transition-transform">
+            <Target className="w-8 h-8 md:w-10 md:h-10 text-red-600 mx-auto mb-2 md:mb-3" />
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
               {new Set(matches.map(m => m.experienceLevel)).size}
             </h3>
-            <p className="text-gray-600 font-medium">Categories</p>
+            <p className="text-xs md:text-sm text-gray-600 font-medium">Categories</p>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex space-x-2 bg-white p-2 rounded-xl shadow-lg mb-8">
+        <div className="flex space-x-2 bg-white p-2 rounded-xl shadow-lg mb-6 md:mb-8">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`flex-1 py-4 px-6 rounded-lg font-bold text-lg transition-all duration-300 ${
+            className={`flex-1 py-3 md:py-4 px-4 md:px-6 rounded-lg font-bold text-sm md:text-lg transition-all duration-300 ${
               activeTab === 'upcoming'
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
-            <div className="flex items-center justify-center space-x-3">
-              <TrendingUp className="w-5 h-5" />
+            <div className="flex items-center justify-center space-x-2 md:space-x-3">
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
               <span>Upcoming ({upcomingMatches.length})</span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab('completed')}
-            className={`flex-1 py-4 px-6 rounded-lg font-bold text-lg transition-all duration-300 ${
+            className={`flex-1 py-3 md:py-4 px-4 md:px-6 rounded-lg font-bold text-sm md:text-lg transition-all duration-300 ${
               activeTab === 'completed'
                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
-            <div className="flex items-center justify-center space-x-3">
-              <CheckSquare className="w-5 h-5" />
+            <div className="flex items-center justify-center space-x-2 md:space-x-3">
+              <CheckSquare className="w-4 h-4 md:w-5 md:h-5" />
               <span>Completed ({completedMatches.length})</span>
             </div>
           </button>
         </div>
 
         {/* Fights List */}
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {activeTab === 'upcoming' && (
             <>
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center">
-                <TrendingUp className="w-8 h-8 mr-3 text-blue-600" />
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center">
+                <TrendingUp className="w-6 h-6 md:w-8 md:h-8 mr-2 md:mr-3 text-blue-600" />
                 Upcoming Fights
               </h2>
               {upcomingMatches.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-xl shadow-lg">
-                  <CalendarDays className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">No Upcoming Fights</h3>
-                  <p className="text-gray-600 text-lg">No fights are currently scheduled.</p>
+                <div className="text-center py-12 md:py-16 bg-white rounded-xl shadow-lg">
+                  <CalendarDays className="w-16 h-16 md:w-20 md:h-20 text-gray-400 mx-auto mb-4 md:mb-6" />
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">No Upcoming Fights</h3>
+                  <p className="text-sm md:text-lg text-gray-600">No fights are currently scheduled for today.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                   {upcomingMatches.map((match, index) => (
                     <FightCard key={match._id} match={match} index={index} />
                   ))}
@@ -361,18 +370,18 @@ const PublicFightsDisplay = () => {
 
           {activeTab === 'completed' && (
             <>
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center">
-                <CheckSquare className="w-8 h-8 mr-3 text-green-600" />
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center">
+                <CheckSquare className="w-6 h-6 md:w-8 md:h-8 mr-2 md:mr-3 text-green-600" />
                 Completed Fights
               </h2>
               {completedMatches.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-xl shadow-lg">
-                  <Trophy className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">No Completed Fights</h3>
-                  <p className="text-gray-600 text-lg">No fights have been completed yet.</p>
+                <div className="text-center py-12 md:py-16 bg-white rounded-xl shadow-lg">
+                  <Trophy className="w-16 h-16 md:w-20 md:h-20 text-gray-400 mx-auto mb-4 md:mb-6" />
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">No Completed Fights</h3>
+                  <p className="text-sm md:text-lg text-gray-600">No fights have been completed yet today.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                   {completedMatches.map((match, index) => (
                     <FightCard key={match._id} match={match} index={index} />
                   ))}
@@ -383,9 +392,9 @@ const PublicFightsDisplay = () => {
         </div>
 
         {/* Footer */}
-        <div className="mt-16 text-center text-gray-500 bg-white rounded-xl shadow-lg p-6">
-          <p className="text-lg font-medium">Sanabo Boxing Matchmaking System</p>
-          <p className="text-sm mt-2">Public Event Display - Last updated: {new Date().toLocaleDateString()}</p>
+        <div className="mt-12 md:mt-16 text-center text-gray-500 bg-white rounded-xl shadow-lg p-4 md:p-6">
+          <p className="text-sm md:text-lg font-medium">Sanabo Boxing Matchmaking System</p>
+          <p className="text-xs md:text-sm mt-2">Public Event Display - Last updated: {new Date().toLocaleTimeString()}</p>
         </div>
       </div>
     </div>

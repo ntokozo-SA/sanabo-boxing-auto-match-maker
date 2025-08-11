@@ -273,7 +273,7 @@ router.post('/matchmaking', async (req, res) => {
             _id: (generatedMatches.length + 1).toString(),
             boxer1: boxer1,
             boxer2: boxer2,
-            scheduledDate: matchDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week from now
+            scheduledDate: matchDate || new Date(), // Today by default
             venue: venue,
             weightClass: getWeightClass(Math.max(boxer1.weightKg, boxer2.weightKg)),
             experienceLevel: boxer1.experienceLevel,
@@ -311,7 +311,7 @@ router.post('/matchmaking', async (req, res) => {
     if (generatedMatches.length > 0) {
       const eventDate = generatedMatches[0].scheduledDate;
       const dateString = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-      eventUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/public-fights`;
+              eventUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/fights`;
       
       try {
         eventQRCodeUrl = await generateEventQRCode(dateString);
@@ -406,23 +406,35 @@ router.post('/:id/result', async (req, res) => {
       loserId,
       method,
       rounds,
-      notes
+      notes,
+      isDraw
     } = req.body;
 
     // Validate required fields
-    if (!winnerId || !loserId || !method) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields: winnerId, loserId, method'
-      });
+    if (isDraw) {
+      // For draws, we don't need winner/loser validation
+      if (!method) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required field: method'
+        });
+      }
+    } else {
+      // For non-draws, validate winner and loser
+      if (!winnerId || !loserId || !method) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required fields: winnerId, loserId, method'
+        });
+      }
     }
 
     // Validate result method
-    const validMethods = ['Decision', 'TKO', 'KO', 'Retirement', 'Disqualification', 'Walkover'];
+    const validMethods = ['Decision', 'TKO', 'KO', 'Retirement', 'Disqualification', 'Walkover', 'Draw'];
     if (!validMethods.includes(method)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid result method. Must be one of: Decision, TKO, KO, Retirement, Disqualification, Walkover'
+        message: 'Invalid result method. Must be one of: Decision, TKO, KO, Retirement, Disqualification, Walkover, Draw'
       });
     }
 
@@ -443,53 +455,106 @@ router.post('/:id/result', async (req, res) => {
       });
     }
 
-    // Find winner and loser boxers
-    const winner = demoDataAPI.getBoxerById(winnerId);
-    const loser = demoDataAPI.getBoxerById(loserId);
-    
-    if (!winner || !loser) {
-      return res.status(400).json({
-        success: false,
-        message: 'Winner or loser not found'
-      });
-    }
+    if (isDraw) {
+      // Handle draw result
+      match.result = {
+        isDraw: true,
+        method: method,
+        rounds: rounds || 3,
+        notes: notes || '',
+        recordedAt: new Date()
+      };
+      match.status = 'Completed';
+      match.updatedAt = new Date();
 
-    // Record result (simplified for demo)
-    match.result = {
-      winner: winner,
-      loser: loser,
-      method: method,
-      rounds: rounds || 3,
-      notes: notes || '',
-      recordedAt: new Date()
-    };
-    match.status = 'Completed';
-    match.updatedAt = new Date();
-
-    // Update boxer records
-    try {
-      // Update winner's record
-      winner.record.wins++;
-      winner.boutsCount++;
-      const winMethod = method.toLowerCase();
-      if (winner.winMethods && winner.winMethods[winMethod] !== undefined) {
-        winner.winMethods[winMethod]++;
+      // Update both boxers' records for draw
+      try {
+        const boxer1 = demoDataAPI.getBoxerById(match.boxer1._id);
+        const boxer2 = demoDataAPI.getBoxerById(match.boxer2._id);
+        
+        if (boxer1 && boxer2) {
+          // Update boxer1's record
+          if (!boxer1.record) boxer1.record = { wins: 0, losses: 0, draws: 0, noContests: 0 };
+          if (!boxer1.boutsCount) boxer1.boutsCount = 0;
+          boxer1.record.draws++;
+          boxer1.boutsCount++;
+          
+          // Update boxer2's record
+          if (!boxer2.record) boxer2.record = { wins: 0, losses: 0, draws: 0, noContests: 0 };
+          if (!boxer2.boutsCount) boxer2.boutsCount = 0;
+          boxer2.record.draws++;
+          boxer2.boutsCount++;
+          
+          // Save updated boxers
+          demoDataAPI.updateBoxer(boxer1._id, boxer1);
+          demoDataAPI.updateBoxer(boxer2._id, boxer2);
+        }
+      } catch (error) {
+        console.error('Error updating boxer records for draw:', error);
+      }
+    } else {
+      // Handle win/loss result
+      const winner = demoDataAPI.getBoxerById(winnerId);
+      const loser = demoDataAPI.getBoxerById(loserId);
+      
+      if (!winner || !loser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Winner or loser not found'
+        });
       }
 
-      // Update loser's record
-      loser.record.losses++;
-      loser.boutsCount++;
-      const lossMethod = method.toLowerCase();
-      if (loser.lossMethods && loser.lossMethods[lossMethod] !== undefined) {
-        loser.lossMethods[lossMethod]++;
-      }
+      // Record result (simplified for demo)
+      match.result = {
+        winner: winner,
+        loser: loser,
+        method: method,
+        rounds: rounds || 3,
+        notes: notes || '',
+        recordedAt: new Date()
+      };
+      match.status = 'Completed';
+      match.updatedAt = new Date();
 
-      // Save updated boxers
-      demoDataAPI.updateBoxer(winner);
-      demoDataAPI.updateBoxer(loser);
-    } catch (error) {
-      console.error('Error updating boxer records:', error);
-      // Continue with match result even if boxer update fails
+      // Update boxer records
+      try {
+        // Update winner's record
+        if (!winner.record) winner.record = { wins: 0, losses: 0, draws: 0, noContests: 0 };
+        if (!winner.boutsCount) winner.boutsCount = 0;
+        winner.record.wins++;
+        winner.boutsCount++;
+        
+        // Initialize winMethods if it doesn't exist
+        if (!winner.winMethods) winner.winMethods = {};
+        const winMethod = method.toLowerCase();
+        if (winner.winMethods[winMethod] !== undefined) {
+          winner.winMethods[winMethod]++;
+        } else {
+          winner.winMethods[winMethod] = 1;
+        }
+
+        // Update loser's record
+        if (!loser.record) loser.record = { wins: 0, losses: 0, draws: 0, noContests: 0 };
+        if (!loser.boutsCount) loser.boutsCount = 0;
+        loser.record.losses++;
+        loser.boutsCount++;
+        
+        // Initialize lossMethods if it doesn't exist
+        if (!loser.lossMethods) loser.lossMethods = {};
+        const lossMethod = method.toLowerCase();
+        if (loser.lossMethods[lossMethod] !== undefined) {
+          loser.lossMethods[lossMethod]++;
+        } else {
+          loser.lossMethods[lossMethod] = 1;
+        }
+
+        // Save updated boxers
+        demoDataAPI.updateBoxer(winner._id, winner);
+        demoDataAPI.updateBoxer(loser._id, loser);
+      } catch (error) {
+        console.error('Error updating boxer records:', error);
+        // Continue with match result even if boxer update fails
+      }
     }
 
     res.json({
@@ -740,6 +805,40 @@ router.get('/stats/overview', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while fetching match statistics',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   DELETE /api/matches/:id
+ * @desc    Delete a match by ID
+ * @access  Public
+ */
+router.delete('/:id', async (req, res) => {
+  try {
+    const matchId = req.params.id;
+    
+    // Use demo data API to delete match
+    const deletedMatch = demoDataAPI.deleteMatch(matchId);
+    
+    if (!deletedMatch) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Match deleted successfully',
+      data: deletedMatch
+    });
+  } catch (error) {
+    console.error('Error deleting match:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting match',
       error: error.message
     });
   }

@@ -1,8 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Trophy, Home, Users, Calendar, Target, Swords, Shield } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Trophy, Swords, QrCode, Home, Users, Calendar, Target, Shield } from 'lucide-react';
 
 const Header = () => {
+  const location = useLocation();
+  const isPublicPage = location.pathname === '/' || 
+                      location.pathname === '/fights' || 
+                      location.pathname === '/public-fights' || 
+                      location.pathname === '/event-today';
+
   return (
     <header className="bg-white shadow-md border-b border-gray-200">
       <div className="container mx-auto px-4">
@@ -20,48 +26,66 @@ const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/" 
-              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
-            >
-              <Home className="w-4 h-4" />
-              <span>Home</span>
-            </Link>
-            <Link 
-              to="/boxers" 
-              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
-            >
-              <Users className="w-4 h-4" />
-              <span>Boxers</span>
-            </Link>
-            <Link 
-              to="/matches" 
-              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>Matches</span>
-            </Link>
-                    <Link
-          to="/matches/matchmaking"
-          className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
-        >
-          <Target className="w-4 h-4" />
-          <span>Matchmaking</span>
-        </Link>
-        <Link
-          to="/fights"
-          className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
-        >
-          <Swords className="w-4 h-4" />
-          <span>Fights</span>
-        </Link>
-        <Link
-          to="/admin"
-          className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
-        >
-          <Shield className="w-4 h-4" />
-          <span>Admin</span>
-        </Link>
+            {isPublicPage ? (
+              <>
+                <Link 
+                  to="/fights" 
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                >
+                  <Swords className="w-4 h-4" />
+                  <span>Today's Fights</span>
+                </Link>
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <QrCode className="w-4 h-4" />
+                  <span className="text-sm">Public View</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/" 
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                >
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </Link>
+                <Link 
+                  to="/boxers" 
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                >
+                  <Users className="w-4 h-4" />
+                  <span>Boxers</span>
+                </Link>
+                <Link 
+                  to="/matches" 
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Matches</span>
+                </Link>
+                <Link
+                  to="/matches/matchmaking"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                >
+                  <Target className="w-4 h-4" />
+                  <span>Matchmaking</span>
+                </Link>
+                <Link
+                  to="/fights"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                >
+                  <Swords className="w-4 h-4" />
+                  <span>Fights</span>
+                </Link>
+                <Link
+                  to="/admin"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+                >
+                  <Shield className="w-4 h-4" />
+                  <span>Admin</span>
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}

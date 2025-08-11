@@ -15,7 +15,8 @@ import {
   Target,
   Crown,
   Medal,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -33,9 +34,12 @@ const Admin = () => {
     loserId: '',
     method: 'Decision',
     rounds: 3,
-    notes: ''
+    notes: '',
+    isDraw: false
   });
   const [saving, setSaving] = useState(false);
+  const [clearConfirmation, setClearConfirmation] = useState(0); // 0 = no confirmation, 1-3 = confirmation steps
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     fetchMatches();
@@ -53,6 +57,93 @@ const Admin = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClearFights = () => {
+    if (clearConfirmation === 0) {
+      setClearConfirmation(1);
+    } else if (clearConfirmation === 1) {
+      setClearConfirmation(2);
+    } else if (clearConfirmation === 2) {
+      setClearConfirmation(3);
+    } else {
+      // Final confirmation - clear all scheduled fights
+      clearAllScheduledFights();
+    }
+  };
+
+  const clearAllScheduledFights = async () => {
+    try {
+      setClearing(true);
+      setError(null);
+      
+      // Get all scheduled matches
+      const scheduledMatches = matches.filter(match => match.status === 'Scheduled');
+      
+      if (scheduledMatches.length === 0) {
+        setError('No scheduled fights to clear');
+        setClearConfirmation(0);
+        setClearing(false);
+        return;
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      // Delete each scheduled match
+      for (const match of scheduledMatches) {
+        try {
+          await axios.delete(`/api/matches/${match._id}`);
+          successCount++;
+        } catch (err) {
+          errorCount++;
+          errors.push(`Failed to delete match ${match.matchId}: ${err.response?.data?.message || err.message}`);
+          console.error(`Error deleting match ${match._id}:`, err);
+        }
+      }
+
+      // Refresh the matches list
+      await fetchMatches();
+      
+      // Show results
+      if (errorCount > 0) {
+        setError(`Cleared ${successCount} matches, but failed to clear ${errorCount} matches. Check console for details.`);
+      } else {
+        alert(`Successfully cleared all ${successCount} scheduled matches!`);
+      }
+      
+      setClearConfirmation(0);
+      setClearing(false);
+    } catch (err) {
+      setError('Failed to clear scheduled fights');
+      console.error('Error clearing fights:', err);
+      setClearConfirmation(0);
+      setClearing(false);
+    }
+  };
+
+  const cancelClearFights = () => {
+    setClearConfirmation(0);
+    setClearing(false);
+  };
+
+  const getClearButtonText = () => {
+    if (clearing) return 'Clearing...';
+    if (clearConfirmation === 0) return 'Clear All Scheduled Fights';
+    if (clearConfirmation === 1) return 'Are you sure? Click again to confirm';
+    if (clearConfirmation === 2) return 'Really sure? Click again to confirm';
+    if (clearConfirmation === 3) return 'Final warning! Click to clear all fights';
+    return 'Clear All Scheduled Fights';
+  };
+
+  const getClearButtonColor = () => {
+    if (clearing) return 'bg-gray-500';
+    if (clearConfirmation === 0) return 'bg-red-600 hover:bg-red-700';
+    if (clearConfirmation === 1) return 'bg-orange-600 hover:bg-orange-700';
+    if (clearConfirmation === 2) return 'bg-yellow-600 hover:bg-yellow-700';
+    if (clearConfirmation === 3) return 'bg-red-800 hover:bg-red-900';
+    return 'bg-red-600 hover:bg-red-700';
   };
 
   const filteredMatches = matches.filter(match => {
@@ -76,7 +167,8 @@ const Admin = () => {
       loserId: match.result?.loser?._id || '',
       method: match.result?.method || 'Decision',
       rounds: match.result?.rounds || match.rounds,
-      notes: match.result?.notes || ''
+      notes: match.result?.notes || '',
+      isDraw: match.result?.isDraw || false
     });
   };
 
@@ -87,19 +179,29 @@ const Admin = () => {
       loserId: '',
       method: 'Decision',
       rounds: 3,
-      notes: ''
+      notes: '',
+      isDraw: false
     });
   };
 
   const handleSaveResult = async () => {
-    if (!editForm.winnerId || !editForm.loserId) {
-      setError('Please select both winner and loser');
-      return;
-    }
+    if (editForm.isDraw) {
+      // For draws, we don't need winner/loser validation
+      if (editForm.method !== 'Draw') {
+        setError('Please select "Draw" as the method for draw results');
+        return;
+      }
+    } else {
+      // For non-draws, validate winner and loser
+      if (!editForm.winnerId || !editForm.loserId) {
+        setError('Please select both winner and loser');
+        return;
+      }
 
-    if (editForm.winnerId === editForm.loserId) {
-      setError('Winner and loser cannot be the same boxer');
-      return;
+      if (editForm.winnerId === editForm.loserId) {
+        setError('Winner and loser cannot be the same boxer');
+        return;
+      }
     }
 
     try {
@@ -167,6 +269,11 @@ const Admin = () => {
     return result && result.loser && result.loser._id === boxerId;
   };
 
+  const isDraw = (boxerId, result, match) => {
+    return result && result.isDraw && match && match.boxer1 && match.boxer2 && 
+           (match.boxer1._id === boxerId || match.boxer2._id === boxerId);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -190,38 +297,57 @@ const Admin = () => {
             </h1>
             <p className="text-xl text-red-100">Manage match results and boxer records</p>
           </div>
-          <button 
-            onClick={fetchMatches}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Refresh</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={fetchMatches}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Refresh</span>
+            </button>
+            <button 
+              onClick={handleClearFights}
+              disabled={clearing}
+              className={`${getClearButtonColor()} px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors text-white font-medium disabled:opacity-50`}
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>{getClearButtonText()}</span>
+            </button>
+            {clearConfirmation > 0 && (
+              <button 
+                onClick={cancelClearFights}
+                className="bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors text-white font-medium"
+              >
+                <X className="w-4 h-4" />
+                <span>Cancel</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div key="total-matches" className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <Trophy className="w-8 h-8 text-blue-600 mx-auto mb-2" />
           <h3 className="text-2xl font-bold text-gray-900">{matches.length}</h3>
           <p className="text-gray-600">Total Matches</p>
         </div>
-        <div key="completed-matches" className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
           <h3 className="text-2xl font-bold text-gray-900">
             {matches.filter(m => m.status === 'Completed').length}
           </h3>
           <p className="text-gray-600">Completed</p>
         </div>
-        <div key="scheduled-matches" className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
           <h3 className="text-2xl font-bold text-gray-900">
             {matches.filter(m => m.status === 'Scheduled').length}
           </h3>
           <p className="text-gray-600">Scheduled</p>
         </div>
-        <div key="with-results" className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <Users className="w-8 h-8 text-purple-600 mx-auto mb-2" />
           <h3 className="text-2xl font-bold text-gray-900">
             {matches.filter(m => m.result).length}
@@ -348,7 +474,28 @@ const Admin = () => {
 
                 {editingMatch?._id === match._id ? (
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {/* Draw Checkbox */}
+                    <div className="mb-4">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={editForm.isDraw}
+                          onChange={(e) => {
+                            setEditForm({ 
+                              ...editForm, 
+                              isDraw: e.target.checked,
+                              winnerId: e.target.checked ? '' : editForm.winnerId,
+                              loserId: e.target.checked ? '' : editForm.loserId
+                            });
+                          }}
+                          className="w-4 h-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                        />
+                        <span className="text-sm font-medium text-gray-700">This is a Draw</span>
+                      </label>
+                    </div>
+
+                    {!editForm.isDraw ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           <CheckCircle className="w-4 h-4 inline mr-1 text-green-600" />
@@ -380,6 +527,14 @@ const Admin = () => {
                         </select>
                       </div>
                     </div>
+                    ) : (
+                      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center text-blue-800">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          <span className="text-sm font-medium">Draw Result - Both boxers will be marked as having a draw</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Method</label>
@@ -394,6 +549,7 @@ const Admin = () => {
                           <option value="Retirement">Retirement</option>
                           <option value="Disqualification">Disqualification</option>
                           <option value="Walkover">Walkover</option>
+                          <option value="Draw">Draw</option>
                         </select>
                       </div>
                       <div>
@@ -421,16 +577,20 @@ const Admin = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Boxer 1 */}
+                    {/* Red Corner */}
                     <div className={`text-center p-4 rounded-lg border-2 ${
                       match.result ? 
                         (isWinner(match.boxer1._id, match.result) ? 'border-green-500 bg-green-50' : 
                          isLoser(match.boxer1._id, match.result) ? 'border-red-500 bg-red-50' : 
-                         'border-gray-200') : 
-                        'border-gray-200'
+                         isDraw(match.boxer1._id, match.result, match) ? 'border-blue-500 bg-blue-50' :
+                         'border-red-300') : 
+                        'border-red-300'
                     }`}>
                       <div className="w-16 h-16 mx-auto mb-2 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold">
                         {match.boxer1.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </div>
+                      <div className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded mb-2">
+                        RED CORNER
                       </div>
                       <h4 className="font-medium text-gray-900">{match.boxer1.name}</h4>
                       <p className="text-sm text-gray-600">{match.boxer1.experienceLevel}</p>
@@ -444,6 +604,12 @@ const Admin = () => {
                         <div className="flex items-center justify-center mt-2 text-red-700">
                           <XCircle className="w-4 h-4 mr-1" />
                           <span className="text-sm font-semibold">LOSER</span>
+                        </div>
+                      )}
+                      {match.result && isDraw(match.boxer1._id, match.result, match) && (
+                        <div className="flex items-center justify-center mt-2 text-blue-700">
+                          <Medal className="w-4 h-4 mr-1" />
+                          <span className="text-sm font-semibold">DRAW</span>
                         </div>
                       )}
                     </div>
@@ -472,16 +638,20 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    {/* Boxer 2 */}
+                    {/* Blue Corner */}
                     <div className={`text-center p-4 rounded-lg border-2 ${
                       match.result ? 
                         (isWinner(match.boxer2._id, match.result) ? 'border-green-500 bg-green-50' : 
                          isLoser(match.boxer2._id, match.result) ? 'border-red-500 bg-red-50' : 
-                         'border-gray-200') : 
-                        'border-gray-200'
+                         isDraw(match.boxer2._id, match.result, match) ? 'border-blue-500 bg-blue-50' :
+                         'border-blue-300') : 
+                        'border-blue-300'
                     }`}>
-                      <div className="w-16 h-16 mx-auto mb-2 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-16 h-16 mx-auto mb-2 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold">
                         {match.boxer2.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </div>
+                      <div className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded mb-2">
+                        BLUE CORNER
                       </div>
                       <h4 className="font-medium text-gray-900">{match.boxer2.name}</h4>
                       <p className="text-sm text-gray-600">{match.boxer2.experienceLevel}</p>
@@ -497,6 +667,12 @@ const Admin = () => {
                           <span className="text-sm font-semibold">LOSER</span>
                         </div>
                       )}
+                      {match.result && isDraw(match.boxer2._id, match.result, match) && (
+                        <div className="flex items-center justify-center mt-2 text-blue-700">
+                          <Medal className="w-4 h-4 mr-1" />
+                          <span className="text-sm font-semibold">DRAW</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -510,21 +686,25 @@ const Admin = () => {
                         <span className="text-sm font-semibold text-blue-800">Result Details</span>
                       </div>
                       <span className="text-xs text-blue-600">
-                        {formatDate(match.result.recordedAt)}
+                        {match.result.recordedAt ? formatDate(match.result.recordedAt) : 'Unknown'}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-xs">
                       <div>
                         <span className="font-medium text-blue-700">Method:</span>
-                        <span className="ml-1 text-blue-800">{match.result.method}</span>
+                        <span className="ml-1 text-blue-800">{match.result.method || 'Unknown'}</span>
                       </div>
                       <div>
                         <span className="font-medium text-blue-700">Rounds:</span>
-                        <span className="ml-1 text-blue-800">{match.result.rounds}</span>
+                        <span className="ml-1 text-blue-800">{match.result.rounds || 'Unknown'}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-blue-700">Winner:</span>
-                        <span className="ml-1 text-blue-800 font-semibold">{match.result.winner.name}</span>
+                        <span className="font-medium text-blue-700">
+                          {match.result.isDraw ? 'Result:' : 'Winner:'}
+                        </span>
+                        <span className="ml-1 text-blue-800 font-semibold">
+                          {match.result.isDraw ? 'Draw' : (match.result.winner?.name || 'Unknown')}
+                        </span>
                       </div>
                     </div>
                     {match.result.notes && (
