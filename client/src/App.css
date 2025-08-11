@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Arial', sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-600 hover:bg-secondary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
+  }
+  
+  .card-hover {
+    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-200;
+  }
+  
+  .winner-card {
+    @apply bg-green-50 border-green-200 shadow-green-100;
+  }
+  
+  .loser-card {
+    @apply bg-red-50 border-red-200 shadow-red-100;
+  }
+  
+  .boxer-avatar {
+    @apply w-24 h-24 rounded-full object-cover border-4 border-gray-200;
+  }
+  
+  .boxer-avatar-winner {
+    @apply border-green-500 shadow-lg shadow-green-200;
+  }
+  
+  .boxer-avatar-loser {
+    @apply border-red-500 shadow-lg shadow-red-200;
+  }
+  
+  .match-status {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .status-scheduled {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  .status-in-progress {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .status-completed {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .status-cancelled {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .result-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .result-winner {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .result-loser {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .experience-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .level-novice {
+    @apply bg-gray-100 text-gray-800;
+  }
+  
+  .level-schools {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  .level-junior {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .level-youth {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .level-elite {
+    @apply bg-purple-100 text-purple-800;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .boxing-gradient {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  }
+} 

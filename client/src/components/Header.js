@@ -1,0 +1,67 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Trophy, Home, Users, Calendar, Target } from 'lucide-react';
+
+const Header = () => {
+  return (
+    <header className="bg-white shadow-md border-b border-gray-200">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and Brand */}
+          <Link to="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Sanabo Boxing</h1>
+              <p className="text-xs text-gray-600">Matchmaking System</p>
+            </div>
+          </Link>
+
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link 
+              to="/" 
+              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+            >
+              <Home className="w-4 h-4" />
+              <span>Home</span>
+            </Link>
+            <Link 
+              to="/boxers" 
+              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+            >
+              <Users className="w-4 h-4" />
+              <span>Boxers</span>
+            </Link>
+            <Link 
+              to="/matches" 
+              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Matches</span>
+            </Link>
+            <Link 
+              to="/matches/matchmaking" 
+              className="flex items-center space-x-2 text-gray-700 hover:text-red-600 transition-colors duration-200"
+            >
+              <Target className="w-4 h-4" />
+              <span>Matchmaking</span>
+            </Link>
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button className="text-gray-700 hover:text-red-600 transition-colors duration-200">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header; 
